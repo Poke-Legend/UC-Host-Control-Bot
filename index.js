@@ -50,8 +50,8 @@ client.on('messageCreate', async message => {
             .setTitle('Cooldown')
             .setDescription(`Please wait ${Math.ceil(remainingCooldown / 1000)} more seconds before using the \`${command}\` command again.`);
         const sentMessage = await message.channel.send({ embeds: [cooldownEmbed] });
-        setTimeout(() => sentMessage.delete().catch(console.error), 20000); // Delete cooldown embed after 20 seconds
-        await message.delete().catch(console.error);
+        setTimeout(() => sentMessage.delete().catch(console.error), 5000); // Delete cooldown embed after 20 seconds
+        setTimeout(() => message.delete().catch(console.error), 5000); // Delete command message after 5 seconds
         return;
     }
 
@@ -65,7 +65,7 @@ client.on('messageCreate', async message => {
     const processOfflineCommand = async () => {
         if (!hasPermission()) {
             await sendEmbed('#ff0000', 'Permission Denied', 'You do not have permission to use this command.');
-            await message.delete().catch(console.error);
+            setTimeout(() => message.delete().catch(console.error), 5000); // Delete command message after 5 seconds
             return;
         }
 
@@ -77,16 +77,16 @@ client.on('messageCreate', async message => {
             config.lastCommands[serverId][channelId] = { timestamp: now, command: 'offline' };
             saveConfig();
         } else {
-            await sendEmbed('#ff0000', 'Union Circle Already Offline', 'This channel is already offline.');
+            await sendEmbed('#ff0000', 'Union Circle Already Offline', 'Union Circle Hosting is already offline.');
         }
 
-        setTimeout(() => message.delete().catch(console.error), 20000); // Delete command message after 20 seconds
+        setTimeout(() => message.delete().catch(console.error), 5000); // Delete command message after 5 seconds
     };
 
     const processOnlineCommand = async () => {
         if (!hasPermission()) {
             await sendEmbed('#ff0000', 'Permission Denied', 'You do not have permission to use this command.');
-            await message.delete().catch(console.error);
+            setTimeout(() => message.delete().catch(console.error), 5000); // Delete command message after 5 seconds
             return;
         }
 
@@ -101,13 +101,13 @@ client.on('messageCreate', async message => {
             await sendEmbed('#00ff00', 'Union Circle Already Online', 'This channel is already online.');
         }
 
-        setTimeout(() => message.delete().catch(console.error), 20000); // Delete command message after 20 seconds
+        setTimeout(() => message.delete().catch(console.error), 5000); // Delete command message after 5 seconds
     };
 
     const processHelpCommand = async () => {
         if (!hasPermission()) {
             await sendEmbed('#ff0000', 'Permission Denied', 'You do not have permission to use this command.');
-            await message.delete().catch(console.error);
+            setTimeout(() => message.delete().catch(console.error), 5000); // Delete command message after 5 seconds
             return;
         }
 
@@ -116,14 +116,14 @@ client.on('messageCreate', async message => {
             .setTitle('Union Hosting Commands')
             .setDescription('Here is a list of commands you can use:')
             .addFields(
-                { name: '$offline', value: 'Lock the current channel. Only users with the allowed roles can use this command.' },
-                { name: '$online', value: 'Unlock the current channel. Only users with the allowed roles can use this command.' }
+                { name: '$offline', value: 'Lock the current channel. Only users with UC Host can use this command.' },
+                { name: '$online', value: 'Unlock the current channel. Only users with UC Host can use this command.' }
             )
             .setFooter({ text: '© 2022 - 2024 Pokémon Legends', iconURL: footerIconUrl });
 
         const sentMessage = await message.channel.send({ embeds: [helpEmbed] });
         setTimeout(() => sentMessage.delete().catch(console.error), 20000); // Delete help embed after 20 seconds
-        setTimeout(() => message.delete().catch(console.error), 20000); // Delete command message after 20 seconds
+        setTimeout(() => message.delete().catch(console.error), 5000); // Delete command message after 5 seconds
     };
 
     if (command === 'offline') {
