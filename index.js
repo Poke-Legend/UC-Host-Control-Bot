@@ -1,15 +1,25 @@
-require('dotenv').config(); // Load environment variables from .env file
+require('dotenv').config();
 const { Client, Intents, MessageEmbed } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
-const prefix = '$'; // Your bot's command prefix
-const allowedRoleIds = [process.env.ALLOWED_ROLE_ID, process.env.ALLOWED_ROLE_ID2]; // Array of allowed role IDs
+const prefix = '$';
+const allowedRoleIds = [process.env.ALLOWED_ROLE_ID, process.env.ALLOWED_ROLE_ID2];
 const lockEmoji = '❌';
 const unlockEmoji = '✅';
-const managedRoleId = process.env.MANAGED_ROLE_ID; // Role ID to manage permissions
-const lockImageUrl = 'https://i.imgur.com/csmSEVh.png'; // Replace with the actual URL of the lock image
-const unlockImageUrl = 'https://i.imgur.com/m1RKJak.png'; // Replace with the actual URL of the unlock image
-const footerIconUrl = 'https://i.imgur.com/r2Tc0xZ.png'; // Replace with the actual URL of the footer logo
+const managedRoleId = process.env.MANAGED_ROLE_ID;
+const lockImageUrl = 'https://i.imgur.com/csmSEVh.png';
+const unlockImageUrl = 'https://i.imgur.com/m1RKJak.png';
+const footerIconUrl = 'https://i.imgur.com/r2Tc0xZ.png';
+const cooldownSeconds = 900; // 15 minutes
+
+const configPath = path.join(__dirname, 'config.json');
+let config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+
+const saveConfig = () => {
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+};
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -20,137 +30,87 @@ client.on('messageCreate', async message => {
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
+    const now = Date.now();
+    const serverId = message.guild.id;
+    const channelId = message.channel.id;
+    const cooldownKey = `${serverId}-${channelId}`;
 
-    if (command === 'offline') {
-        // Check if the user has any of the allowed roles to lock channels
-        if (!message.member.roles.cache.some(role => allowedRoleIds.includes(role.id))) {
-            // User does not have permission embed
-            const noPermissionEmbed = new MessageEmbed()
-                .setColor('#ff0000')
-                .setTitle('Permission Denied')
-                .setDescription('You do not have permission to use this command.');
+    if (!config.lastCommands[serverId]) {
+        config.lastCommands[serverId] = {};
+    }
 
-            await message.channel.send({ embeds: [noPermissionEmbed] });
-            
-            // Delete the user's command message with error handling
-            try {
-                await message.delete();
-            } catch (error) {
-                console.error('Failed to delete the command message:', error);
-            }
+    const lastCommand = config.lastCommands[serverId][channelId]?.command;
+    const lastTimestamp = config.lastCommands[serverId][channelId]?.timestamp || 0;
+    const remainingCooldown = lastTimestamp ? (lastTimestamp + cooldownSeconds * 1000 - now) : 0;
+    const isOppositeCommand = (command === 'offline' && lastCommand === 'online') || (command === 'online' && lastCommand === 'offline');
 
+    if (isOppositeCommand && remainingCooldown > 0) {
+        const cooldownEmbed = new MessageEmbed()
+            .setColor('#ff0000')
+            .setTitle('Cooldown')
+            .setDescription(`Please wait ${Math.ceil(remainingCooldown / 1000)} more seconds before using the \`${command}\` command again.`);
+        const sentMessage = await message.channel.send({ embeds: [cooldownEmbed] });
+        setTimeout(() => sentMessage.delete().catch(console.error), 20000); // Delete cooldown embed after 20 seconds
+        await message.delete().catch(console.error);
+        return;
+    }
+
+    const hasPermission = () => message.member.roles.cache.some(role => allowedRoleIds.includes(role.id));
+    const sendEmbed = async (color, title, description, imageUrl = null) => {
+        const embed = new MessageEmbed().setColor(color).setTitle(title).setDescription(description);
+        if (imageUrl) embed.setImage(imageUrl);
+        await message.channel.send({ embeds: [embed] });
+    };
+
+    const processOfflineCommand = async () => {
+        if (!hasPermission()) {
+            await sendEmbed('#ff0000', 'Permission Denied', 'You do not have permission to use this command.');
+            await message.delete().catch(console.error);
             return;
         }
 
         const channel = message.channel;
-
         if (!channel.name.startsWith(lockEmoji)) {
-            const newName = `${lockEmoji}${channel.name.replace(unlockEmoji, '')}`;
-            await channel.setName(newName);
-            await channel.permissionOverwrites.edit(managedRoleId, {
-                SEND_MESSAGES: false
-            });
-
-            // Send lock message with embed
-            const lockEmbed = new MessageEmbed()
-                .setColor('#ff0000')
-                .setTitle('Union Circle Offline')
-                .setDescription(`${message.author} is not hosting Union Circle`)
-                .setImage(lockImageUrl); // Add lock image
-
-            await message.channel.send({ embeds: [lockEmbed] });
+            await channel.setName(`${lockEmoji}${channel.name.replace(unlockEmoji, '')}`);
+            await channel.permissionOverwrites.edit(managedRoleId, { SEND_MESSAGES: false });
+            await sendEmbed('#ff0000', 'Union Circle Offline', `${message.author} is not hosting Union Circle`, lockImageUrl);
+            config.lastCommands[serverId][channelId] = { timestamp: now, command: 'offline' };
+            saveConfig();
         } else {
-            // Channel is already locked embed
-            const alreadyLockedEmbed = new MessageEmbed()
-                .setColor('#ff0000')
-                .setTitle('Union Circle Already Offline')
-                .setDescription('This channel is already offline.');
-
-            await message.channel.send({ embeds: [alreadyLockedEmbed] });
+            await sendEmbed('#ff0000', 'Union Circle Already Offline', 'This channel is already offline.');
         }
 
-        // Delete the user's command message with error handling
-        try {
-            await message.delete();
-        } catch (error) {
-            console.error('Failed to delete the command message:', error);
-        }
-    } else if (command === 'online') {
-        // Check if the user has any of the allowed roles to unlock channels
-        if (!message.member.roles.cache.some(role => allowedRoleIds.includes(role.id))) {
-            // User does not have permission embed
-            const noPermissionEmbed = new MessageEmbed()
-                .setColor('#ff0000')
-                .setTitle('Permission Denied')
-                .setDescription('You do not have permission to use this command.');
+        setTimeout(() => message.delete().catch(console.error), 20000); // Delete command message after 20 seconds
+    };
 
-            await message.channel.send({ embeds: [noPermissionEmbed] });
-            
-            // Delete the user's command message with error handling
-            try {
-                await message.delete();
-            } catch (error) {
-                console.error('Failed to delete the command message:', error);
-            }
-
+    const processOnlineCommand = async () => {
+        if (!hasPermission()) {
+            await sendEmbed('#ff0000', 'Permission Denied', 'You do not have permission to use this command.');
+            await message.delete().catch(console.error);
             return;
         }
 
         const channel = message.channel;
-
         if (channel.name.startsWith(lockEmoji)) {
-            const newName = `${unlockEmoji}${channel.name.replace(lockEmoji, '')}`;
-            await channel.setName(newName);
-            await channel.permissionOverwrites.edit(managedRoleId, {
-                SEND_MESSAGES: true
-            });
-
-            // Send unlock message with embed
-            const unlockEmbed = new MessageEmbed()
-                .setColor('#00ff00')
-                .setTitle('Union Circle Online')
-                .setDescription(`${message.author} is hosting Union Circle`)
-                .setImage(unlockImageUrl); // Add unlock image
-
-            await message.channel.send({ embeds: [unlockEmbed] });
+            await channel.setName(`${unlockEmoji}${channel.name.replace(lockEmoji, '')}`);
+            await channel.permissionOverwrites.edit(managedRoleId, { SEND_MESSAGES: true });
+            await sendEmbed('#00ff00', 'Union Circle Online', `${message.author} is hosting Union Circle`, unlockImageUrl);
+            config.lastCommands[serverId][channelId] = { timestamp: now, command: 'online' };
+            saveConfig();
         } else {
-            // Channel is already unlocked embed
-            const alreadyUnlockedEmbed = new MessageEmbed()
-                .setColor('#00ff00')
-                .setTitle('Union Circle Already Online')
-                .setDescription('This channel is already online.');
-
-            await message.channel.send({ embeds: [alreadyUnlockedEmbed] });
+            await sendEmbed('#00ff00', 'Union Circle Already Online', 'This channel is already online.');
         }
 
-        // Delete the user's command message with error handling
-        try {
-            await message.delete();
-        } catch (error) {
-            console.error('Failed to delete the command message:', error);
-        }
-    } else if (command === 'help') {
-        // Check if the user has any of the allowed roles to use the help command
-        if (!message.member.roles.cache.some(role => allowedRoleIds.includes(role.id))) {
-            // User does not have permission embed
-            const noPermissionEmbed = new MessageEmbed()
-                .setColor('#ff0000')
-                .setTitle('Permission Denied')
-                .setDescription('You do not have permission to use this command.');
+        setTimeout(() => message.delete().catch(console.error), 20000); // Delete command message after 20 seconds
+    };
 
-            await message.channel.send({ embeds: [noPermissionEmbed] });
-
-            // Delete the user's command message with error handling
-            try {
-                await message.delete();
-            } catch (error) {
-                console.error('Failed to delete the command message:', error);
-            }
-
+    const processHelpCommand = async () => {
+        if (!hasPermission()) {
+            await sendEmbed('#ff0000', 'Permission Denied', 'You do not have permission to use this command.');
+            await message.delete().catch(console.error);
             return;
         }
 
-        // Create help embed
         const helpEmbed = new MessageEmbed()
             .setColor('#99AAb5')
             .setTitle('Union Hosting Commands')
@@ -161,15 +121,18 @@ client.on('messageCreate', async message => {
             )
             .setFooter({ text: '© 2022 - 2024 Pokémon Legends', iconURL: footerIconUrl });
 
-        await message.channel.send({ embeds: [helpEmbed] });
+        const sentMessage = await message.channel.send({ embeds: [helpEmbed] });
+        setTimeout(() => sentMessage.delete().catch(console.error), 20000); // Delete help embed after 20 seconds
+        setTimeout(() => message.delete().catch(console.error), 20000); // Delete command message after 20 seconds
+    };
 
-        // Delete the user's command message with error handling
-        try {
-            await message.delete();
-        } catch (error) {
-            console.error('Failed to delete the command message:', error);
-        }
+    if (command === 'offline') {
+        await processOfflineCommand();
+    } else if (command === 'online') {
+        await processOnlineCommand();
+    } else if (command === 'help') {
+        await processHelpCommand();
     }
 });
 
-client.login(process.env.BOT_TOKEN); // Use the bot token from .env file
+client.login(process.env.BOT_TOKEN);
