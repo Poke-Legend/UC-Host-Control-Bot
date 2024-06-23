@@ -1,29 +1,72 @@
-This bot is designed to manage channel permissions in a Discord server, specifically for locking and unlocking channels for Union Circle hosting. It performs the following functions:
+# Union Circle Bot
 
-1. **Lock a Channel (`$lock` Command):**
-   - **Checks Permissions:** The bot verifies if the user has any of the allowed roles (specified by `ALLOWED_ROLE_ID` and `ALLOWED_ROLE_ID2` in the environment variables).
-   - **Lock Channel:** If the user has the required permissions, the bot locks the channel by changing its name to start with a lock emoji (`❌`), updating the channel's permissions to prevent the `managedRoleId` role from sending messages, and sending an embed message indicating that the Union Circle is offline.
-   - **Permission Denied:** If the user lacks the required permissions, the bot sends an embed message stating that the user does not have permission to use the command and deletes the user's command message.
+A Discord bot for managing Union Circle hosting and other related commands in a Pokémon Legends server. The bot uses commands to lock and unlock channels, display Union Circle codes, and manage user permissions based on roles.
 
-2. **Unlock a Channel (`$unlock` Command):**
-   - **Checks Permissions:** Similar to the lock command, the bot checks if the user has any of the allowed roles.
-   - **Unlock Channel:** If the user has the required permissions, the bot unlocks the channel by changing its name to start with an unlock emoji (`✅`), updating the channel's permissions to allow the `managedRoleId` role to send messages, and sending an embed message indicating that the Union Circle is online.
-   - **Permission Denied:** If the user lacks the required permissions, the bot sends an embed message stating that the user does not have permission to use the command and deletes the user's command message.
+## Features
 
-3. **Help Command (`$help` Command):**
-   - **Checks Permissions:** The bot checks if the user has any of the allowed roles.
-   - **Send Help Embed:** If the user has the required permissions, the bot sends an embed message containing a list of available commands (`$lock` and `$unlock`).
-   - **Permission Denied:** If the user lacks the required permissions, the bot sends an embed message stating that the user does not have permission to use the command and deletes the user's command message.
+- **Offline Command:** Locks the current channel, preventing messages from users without specific roles.
+- **Online Command:** Unlocks the current channel, allowing messages and notifying specific roles.
+- **Code Command:** Displays the Union Circle code with a custom embed.
+- **Help Command:** Displays a list of available commands and their descriptions.
 
-### Environment Variables
-The bot relies on several environment variables for configuration:
-- `BOT_TOKEN`: The bot's token for authentication.
-- `ALLOWED_ROLE_ID` and `ALLOWED_ROLE_ID2`: The IDs of the roles allowed to use the commands.
-- `MANAGED_ROLE_ID`: The ID of the role whose permissions are managed by the bot.
+## Requirements
 
-### Usage
-- **Locking a Channel:** A user with the appropriate role types `$lock` in a channel. If they have permission, the channel is locked, preventing members with the `MANAGED_ROLE_ID` from sending messages.
-- **Unlocking a Channel:** A user with the appropriate role types `$unlock` in a channel. If they have permission, the channel is unlocked, allowing members with the `MANAGED_ROLE_ID` to send messages.
-- **Help:** A user with the appropriate role types `$help` to receive information about the available commands.
+- Node.js
+- Discord.js v13+
+- A Discord bot token
+- A .env file with the following environment variables:
+  - `BOT_TOKEN`: Your bot's token
+  - `ALLOWED_ROLE_ID`: The role ID allowed to use commands
+  - `ALLOWED_ROLE_ID2`: Another role ID allowed to use commands
+  - `MANAGED_ROLE_ID`: The role ID to manage channel permissions
+  - `PING_ROLE_ID`: The role ID to ping when commands are used
 
-The bot uses Discord.js to interact with the Discord API and manage the embed messages and permissions.
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/union-circle-bot.git
+cd union-circle-bot
+```
+
+2. Install the dependencies:
+
+```bash
+npm install
+```
+
+3. Create a `.env` file in the root directory with the necessary environment variables:
+
+```env
+BOT_TOKEN=your-discord-bot-token
+ALLOWED_ROLE_ID=allowed-role-id
+ALLOWED_ROLE_ID2=another-allowed-role-id
+MANAGED_ROLE_ID=managed-role-id
+PING_ROLE_ID=ping-role-id
+```
+
+4. Run the bot:
+
+```bash
+node index.js
+```
+
+## Commands
+
+- **$offline**
+  - Locks the current channel, preventing users from sending messages. Only users with the allowed roles can use this command.
+- **$online**
+  - Unlocks the current channel, allowing users to send messages. Only users with the allowed roles can use this command.
+- **$code [code]**
+  - Displays the Union Circle code with a custom embed. Only users with the allowed roles can use this command.
+- **$help**
+  - Displays a list of available commands and their descriptions.
+
+## Configuration
+
+The bot uses a `config.json` file to store the last used commands and code embeds for each server and channel. Ensure the bot has write permissions to the directory where the `config.json` file is located.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
