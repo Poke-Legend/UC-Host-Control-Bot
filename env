@@ -1,0 +1,25 @@
+
+# Discord bot token
+BOT_TOKEN=
+
+# Role IDs allowed to use commands
+ALLOWED_ROLE_ID=
+ALLOWED_ROLE_ID2=
+
+# Role ID for managed role permissions
+MANAGED_ROLE_ID=
+
+# Role ID for ping role
+PING_ROLE_ID=
+
+# URLs for images used in embeds
+LOCK_IMAGE_URL=https://i.imgur.com/csmSEVh.png
+UNLOCK_IMAGE_URL=https://i.imgur.com/m1RKJak.png
+CUSTOM_IMAGE_URL=https://i.imgur.com/WeMePud.jpg
+FLY_IMAGE_URL=https://i.imgur.com/eIs2hYS.gif
+STAY_IMAGE_URL=https://i.imgur.com/E2ghkjz.gif
+READY_IMAGE_URL=https://i.imgur.com/MHROnRZ.png
+
+# Footer text and icon URL for embeds
+FOOTER_TEXT=© 2022 - 2024 Pokémon Legends
+FOOTER_ICON_URL=https://i.imgur.com/r2Tc0xZ.png
