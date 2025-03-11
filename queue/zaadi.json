@@ -1,0 +1,71 @@
+{
+  "lastCommands": {
+    "1095036363348377623": {
+      "timestamp": 1741635993137,
+      "command": "online"
+    }
+  },
+  "lastCodeEmbeds": {},
+  "registeredUsers": {
+    "693172805621121085": true,
+    "1147645739418275892": true,
+    "782164994891448321": true,
+    "286397907010322432": true,
+    "771823248908353557": true
+  },
+  "queue": {
+    "registrations": []
+  },
+  "activeSession": [
+    {
+      "userId": "771823248908353557",
+      "ign": "Arthur",
+      "pokemon": "Kyurem white",
+      "pokemonLevel": "100",
+      "shiny": "Yes",
+      "holdingItem": "Master ball"
+    },
+    {
+      "userId": "693172805621121085",
+      "ign": "Diana",
+      "pokemon": "Chien-Pao",
+      "pokemonLevel": "100",
+      "shiny": "Yes",
+      "holdingItem": "Master Ball"
+    },
+    {
+      "userId": "1147645739418275892",
+      "ign": "Chris24four",
+      "pokemon": "Enamorus",
+      "pokemonLevel": "100",
+      "shiny": "Yes",
+      "holdingItem": "Mb"
+    }
+  ],
+  "waitingList": [
+    {
+      "userId": "782164994891448321",
+      "ign": "Gmdp",
+      "pokemon": "Spectrier",
+      "pokemonLevel": "100",
+      "shiny": "Yes",
+      "holdingItem": "Mb"
+    },
+    {
+      "userId": "286397907010322432",
+      "ign": "IvoryRyu",
+      "pokemon": "Lunala",
+      "pokemonLevel": "100",
+      "shiny": "Yes",
+      "holdingItem": "Master Ball"
+    },
+    {
+      "userId": "771823248908353557",
+      "ign": "Arthur",
+      "pokemon": "Kyurem white",
+      "pokemonLevel": "100",
+      "shiny": "Yes",
+      "holdingItem": "Master ball"
+    }
+  ]
+}
