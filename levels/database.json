@@ -1,6 +1,6 @@
 {
   "452840139882758155": {
-    "xp": 5,
+    "xp": 150,
     "level": 2,
     "badges": [
       "https://i.imgur.com/QAOmpNv.png",
@@ -8,15 +8,16 @@
     ]
   },
   "782164994891448321": {
-    "xp": 15,
-    "level": 2,
+    "xp": 50,
+    "level": 3,
     "badges": [
       "https://i.imgur.com/QAOmpNv.png",
-      "https://i.imgur.com/lPW4LC9.png"
+      "https://i.imgur.com/lPW4LC9.png",
+      "https://i.imgur.com/Y0dpWdL.png"
     ]
   },
   "99954108894552064": {
-    "xp": 70,
+    "xp": 150,
     "level": 2,
     "badges": [
       "https://i.imgur.com/QAOmpNv.png",
@@ -25,21 +26,22 @@
     "modified": true
   },
   "1289233632057098415": {
-    "xp": 20,
+    "xp": 70,
     "level": 1,
     "badges": [
       "https://i.imgur.com/QAOmpNv.png"
     ]
   },
   "286397907010322432": {
-    "xp": 10,
-    "level": 1,
+    "xp": 15,
+    "level": 2,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
+      "https://i.imgur.com/QAOmpNv.png",
+      "https://i.imgur.com/lPW4LC9.png"
     ]
   },
   "1051680882253123616": {
-    "xp": 10,
+    "xp": 70,
     "level": 1,
     "badges": [
       "https://i.imgur.com/QAOmpNv.png"
@@ -47,6 +49,96 @@
   },
   "298238638419083266": {
     "xp": 5,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "1087152322968309862": {
+    "xp": 5,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "596304605709860904": {
+    "xp": 90,
+    "level": 2,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png",
+      "https://i.imgur.com/lPW4LC9.png"
+    ],
+    "modified": false
+  },
+  "1020776456734904411": {
+    "xp": 10,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "1236833939478282270": {
+    "xp": 10,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "1006266718127141014": {
+    "xp": 20,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "1009641900107644998": {
+    "xp": 5,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "693172805621121085": {
+    "xp": 85,
+    "level": 2,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png",
+      "https://i.imgur.com/lPW4LC9.png"
+    ],
+    "modified": false
+  },
+  "789596605090627635": {
+    "xp": 15,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "789121250311667753": {
+    "xp": 5,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "1147645739418275892": {
+    "xp": 5,
+    "level": 1,
+    "badges": [
+      "https://i.imgur.com/QAOmpNv.png"
+    ],
+    "modified": false
+  },
+  "1129464865627578449": {
+    "xp": 10,
     "level": 1,
     "badges": [
       "https://i.imgur.com/QAOmpNv.png"

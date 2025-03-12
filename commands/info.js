@@ -1,4 +1,3 @@
-// commands/info.js
 const { createEmbed } = require('../utils/helper');
 const config = require('../utils/config');
 const { version: discordVersion } = require('discord.js');
@@ -11,7 +10,7 @@ module.exports = {
     const embed = createEmbed({
       color: '#0099ff',
       title: 'Union Circle Bot Information',
-      description: `**Version:** 1.0.3
+      description: `**Version:** ${config.version}
 **Creator:** DeVry
 **Library:** discord.js v${discordVersion}  
 **Prefix:** ${config.prefix}  

@@ -1,4 +1,3 @@
-// commands/help.js
 const { createEmbed } = require('../utils/helper');
 const config = require('../utils/config');
 
@@ -8,63 +7,60 @@ module.exports = {
   async execute(message, args, channelConfig, client) {
     const helpEmbed = createEmbed({
       color: '#0099ff',
-      title: 'Union Hosting - Help & Commands',
-      description: 'Below are the available commands for Union Circle Hosting.',
+      title: 'Union Circle Bot - Command Guide',
+      description: 'Welcome to the Union Circle Bot help menu! Below you\'ll find all available commands organized by category:',
       extraFields: [
         {
-          name: '🔒 Channel Management',
-          value: '`$offline` - Lock the channel, reset queues, and disable messaging.\n' +
-                 '`$online` - Unlock the channel, reset queues, and enable messaging.',
+          name: '🔄 Channel Management',
+          value: '`$online` - Open the channel, enable messaging, reset all data.\n' +
+                 '`$offline` - Close the channel, disable messaging, reset all data.',
         },
         {
           name: '📋 Registration & Session',
-          value: '`/register` - Register your in-game details via a modal.\n' +
-                 '`$start` - Begin the next session and DM details to the host.\n' +
+          value: '`/register` - Register your in-game details via an interactive modal.\n' +
+                 '`$start` - Begin the next session and DM player details to the host.\n' +
                  '`$starthere` - Display active session details in the channel.\n' +
-                 '`$startqueue` - Show session details publicly.',
+                 '`$startqueue` - Show session details publicly in the channel.',
         },
         {
-          name: '⏩ Queue Management',
-          value: '`$waitlist` - View pending registrations with pagination.\n' +
-                 '`$queue` - Show the main session queue.\n' +
-                 '`$nextqueue` - Move players from the waiting list to the main queue.',
-        },
-        {
-          name: '🛠 Registration Reset & User Management',
-          value: '`$resetregister` - Reset user registrations (queue/waitlist remain intact).\n' +
+          name: '📊 Queue Management',
+          value: '`$queue` - Show the current main session queue.\n' +
+                 '`$waitlist` - View pending registrations with pagination.\n' +
+                 '`$nextqueue` - Move players from waiting list to main queue.\n' +
+                 '`$resetregister` - Reset all user registrations (queue/waitlist intact).\n' +
                  '`$resetuser` - Reset registration for a specific user.\n' +
-                 '`$removewait` - Remove a user from the waiting list.',
+                 '`$removewait` - Remove a specific user from the waiting list.',
         },
         {
-          name: '🔑 Code Distribution',
-          value: '`$code` - Distribute codes to players.',
-        },
-        {
-          name: '✈️ Flight & Fun Commands',
-          value: '`$fly` - Fly to Levincia.\n' +
-                 '`$fly2` - Fly to Alfornada.\n' +
-                 '`$flyplatos` - Fly to Los Platos.\n' +
-                 '`$stay` - Request users to stay.\n' +
-                 '`$ready` - Indicate readiness.\n' +
+          name: '🎮 Host Commands',
+          value: '`$code` - Send Union Circle codes to active players.\n' +
+                 '`$fly` - Fly to Levincia with animation.\n' +
+                 '`$fly2` - Fly to Alfornada with animation.\n' +
+                 '`$flyplatos` - Fly to Los Platos with animation.\n' +
+                 '`$stay` - Request users to remain stationary.\n' +
+                 '`$ready` - Indicate readiness (Artazon).\n' +
                  '`$slut` - VIP command for Los Platos.',
         },
         {
-          name: '🚫 Ban Commands (Slash)',
-          value: '`/ucban` - Ban a user (requires Ban Members permission).\n' +
-                 '`/ucunban` - Unban a user (requires Ban Members permission).',
-        },
-        {
-          name: '🎮 UC Leveling System',
+          name: '🏆 UC Leveling System',
           value: '`/levels` - View your current level, XP progress, and gym badges.\n' +
-                 '`/leveluser` - View leveling info for a specified user (by mention or ID).',
+                 '`/leveluser` - View leveling info for another user.\n' +
+                 '`/modifyxp` - Add or remove XP (Admin only).',
         },
         {
-          name: 'ℹ️ Additional Commands',
+          name: '🔒 Moderation',
+          value: '`/ucban` - Ban a user from all Union Circles.\n' +
+                 '`/ucunban` - Unban a user from Union Circles.',
+        },
+        {
+          name: 'ℹ️ Bot Information',
           value: '`$help` - Display this help message.\n' +
-                 '`$info` - Show bot information and version details.\n' +
+                 '`$about` - Detailed bot and developer information.\n' +
+                 '`$info` - Quick version and uptime information.\n' +
                  '`$stats` - Display server statistics.',
         },
       ],
+      image: config.images.custom,
     });
     await message.channel.send({ embeds: [helpEmbed] });
   },

@@ -1,6 +1,7 @@
 // levels/levelSystem.js
 const fs = require('fs');
 const path = require('path');
+const { EmbedBuilder } = require('discord.js');
 
 // Path to the leveling database file
 const dbDir = path.join(__dirname);
@@ -54,6 +55,20 @@ const badgeUrls = {
   9: 'https://i.imgur.com/crCBXpJ.png',
   10: 'https://i.imgur.com/ocH0QGV.png',
   // Add more levels if needed.
+};
+
+// Badge names for each level
+const badgeNames = {
+  1: "Boulder Badge",
+  2: "Cascade Badge",
+  3: "Thunder Badge",
+  4: "Rainbow Badge",
+  5: "Soul Badge",
+  6: "Marsh Badge", 
+  7: "Volcano Badge",
+  8: "Earth Badge",
+  9: "Balance Badge",
+  10: "Master Badge"
 };
 
 // Function to add XP for a given user.
@@ -128,6 +143,14 @@ const removeXp = (userId, xp, override = false) => {
   saveData();
 };
 
+// Helper function to create a progress bar
+const progressBar = (xp, threshold, barLength = 10) => {
+  const percent = xp / threshold;
+  const filledLength = Math.round(barLength * percent);
+  const emptyLength = barLength - filledLength;
+  return '▰'.repeat(filledLength) + '▱'.repeat(emptyLength);
+};
+
 // In-memory cooldown store to prevent spam XP gain (per user)
 const xpCooldown = {}; // key: userId, value: timestamp
 const XP_COOLDOWN_MS = 60 * 1000; // 60 seconds cooldown
@@ -135,7 +158,7 @@ const XP_COOLDOWN_MS = 60 * 1000; // 60 seconds cooldown
 // Initialize the leveling system by listening to message events.
 const initLevelSystem = (client) => {
   loadData();
-  client.on('messageCreate', (message) => {
+  client.on('messageCreate', async (message) => {
     // Ignore bot messages.
     if (message.author.bot) return;
     
@@ -147,8 +170,44 @@ const initLevelSystem = (client) => {
     const prevLevel = xpData[userId] ? xpData[userId].level : 1;
     addXp(userId, 5); // Normal XP gain, no override.
     const newLevel = xpData[userId].level;
+    
     if (newLevel > prevLevel) {
-      message.channel.send(`Congratulations <@${userId}>! You've leveled up to level ${newLevel}!`);
+      try {
+        // Get the badge details for the new level
+        const badgeUrl = badgeUrls[newLevel];
+        const badgeName = badgeNames[newLevel] || `Level ${newLevel} Badge`;
+        const nextThreshold = getXpThreshold(newLevel);
+        const currentXp = xpData[userId].xp;
+        const bar = progressBar(currentXp, nextThreshold);
+        
+        // Create a rich embed for the level up announcement
+        const embed = new EmbedBuilder()
+          .setColor('#FFD700') // Gold color for achievements
+          .setTitle(`🏅 UC Trainer Level Up! 🏅`)
+          .setDescription(`Congratulations <@${userId}>! You've reached **UC Level ${newLevel}**!`)
+          .addFields(
+            { name: `🔥 New Gym Badge Unlocked: ${badgeName}`, value: `Gym Badge ${newLevel} of ${MAX_LEVEL}`, inline: false },
+            { name: 'XP Progress', value: `${currentXp}/${nextThreshold} XP\n${bar}`, inline: false }
+          )
+          .setImage(badgeUrl)
+          .setFooter({ text: 'Union Circle Leveling System | This message will disappear in 60 seconds' })
+          .setTimestamp();
+        
+        // Send embed and delete after 60 seconds
+        const levelUpMessage = await message.channel.send({ embeds: [embed] });
+        
+        // Delete the message after 60 seconds
+        setTimeout(() => {
+          levelUpMessage.delete().catch(err => {
+            // Ignore messages that are already deleted
+            if (err.code !== 10008) {
+              console.error('Error deleting level up message:', err);
+            }
+          });
+        }, 60000); // 60 seconds
+      } catch (error) {
+        console.error('Error sending level up notification:', error);
+      }
     }
   });
 };
