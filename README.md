@@ -1,7 +1,6 @@
 ## 🛣️ Roadmap
 
 - [x] Initial release with core features
-- [x] Documentation website
 - [ ] Performance improvements
 
 ## 💖 Support
