@@ -1,4 +1,3 @@
-// commands/code.js
 const { createEmbed, sendEmbed, safeDelete } = require('../utils/helper');
 const config = require('../utils/config');
 
@@ -47,29 +46,46 @@ module.exports = {
       return;
     }
 
+    // Improved DM handling
     let failedDMs = [];
+    let successfulDMs = 0;
+    
     for (const reg of targetGroup) {
       try {
         const user = await client.users.fetch(reg.userId);
+        
+        if (!user) {
+          console.log(`Failed to fetch user: ${reg.userId}`);
+          failedDMs.push({ userId: reg.userId, reason: 'User not found' });
+          continue;
+        }
+        
         // Create the embed using our helper; this converts hex colors to int.
         const dmEmbed = createEmbed({
           color: '#0099ff',
           title: `${message.author.username}'s Union Circle Code`,
           description: `Your code is: \`${code}\``,
           image: config.images.custom, // Must be a valid URL string (e.g., "https://example.com/image.png")
-          extraFields: [{ name: 'Note', value: 'Check your DM for instructions.' }],
+          extraFields: [{ name: 'Note', value: 'This code is for the current session only.' }],
         });
+        
         await user.send({ embeds: [dmEmbed] });
+        successfulDMs++;
+        console.log(`Successfully sent DM to: ${user.tag} (${reg.userId})`);
       } catch (error) {
+        console.error(`DM Error for ${reg.userId}:`, error);
         if (error.code === 50007) {
-          failedDMs.push(reg.userId);
+          failedDMs.push({ userId: reg.userId, reason: 'DMs disabled' });
         } else {
-          console.error('DM Error:', error);
+          failedDMs.push({ userId: reg.userId, reason: `Error: ${error.message}` });
         }
       }
     }
 
+    // Send ping with mention
     const pingMsg = await message.channel.send(`<@&${config.pingRoleId}>`);
+    
+    // Main success embed
     await sendEmbed(
       message.channel,
       '#00ff00',
@@ -78,20 +94,35 @@ module.exports = {
         channelConfig.activeSession && channelConfig.activeSession.length > 0
           ? 'active session'
           : 'current queue'
-      }.`,
+      }.\n\n${successfulDMs} out of ${targetGroup.length} players received their code.`,
       null,
-      [{ name: 'Status', value: 'Direct Messages Sent' }]
+      [{ 
+        name: 'Status', 
+        value: successfulDMs === targetGroup.length 
+          ? 'All Direct Messages Sent Successfully' 
+          : 'Some Direct Messages Failed (see details below)'
+      }]
     );
+    
+    // Remove the ping after a short delay
     safeDelete(pingMsg, 1000);
 
+    // Send more detailed failed DM information
     if (failedDMs.length > 0) {
       const failedEmbed = createEmbed({
         color: '#ff0000',
         title: 'DM Failed',
         description: 'Could not send code to the following users:',
-        extraFields: failedDMs.map(id => ({ name: 'User ID', value: id })),
+        extraFields: failedDMs.map((fail, index) => ({ 
+          name: `User ${index + 1}`, 
+          value: `<@${fail.userId}>: ${fail.reason}`
+        })),
       });
-      await message.channel.send({ embeds: [failedEmbed] });
+      
+      const failureMsg = await message.channel.send({ embeds: [failedEmbed] });
+      
+      // This message with error info will stay longer
+      safeDelete(failureMsg, 30000);
     }
   },
 };

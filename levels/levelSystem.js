@@ -1,11 +1,18 @@
 // levels/levelSystem.js
 const fs = require('fs');
 const path = require('path');
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { createCanvas, loadImage } = require('canvas');
 
 // Path to the leveling database file
 const dbDir = path.join(__dirname);
 const dbPath = path.join(dbDir, 'database.json');
+
+// Create cache directory if it doesn't exist
+const cacheDir = path.join(__dirname, '..', 'cache');
+if (!fs.existsSync(cacheDir)) {
+  fs.mkdirSync(cacheDir, { recursive: true });
+}
 
 // Ensure the levels folder and database.json exist
 if (!fs.existsSync(dbDir)) {
@@ -44,16 +51,16 @@ const getXpThreshold = (level) => level * 100;
 
 // Custom badge image URLs for specific levels
 const badgeUrls = {
-  1: 'https://i.imgur.com/QAOmpNv.png',
-  2: 'https://i.imgur.com/lPW4LC9.png',
-  3: 'https://i.imgur.com/Y0dpWdL.png',
-  4: 'https://i.imgur.com/xXUUwzx.png',
-  5: 'https://i.imgur.com/9RNbY7J.png',
-  6: 'https://i.imgur.com/JBlyYaY.png',
-  7: 'https://i.imgur.com/eLjeAgE.png',
-  8: 'https://i.imgur.com/hccRVbT.png',
-  9: 'https://i.imgur.com/crCBXpJ.png',
-  10: 'https://i.imgur.com/ocH0QGV.png',
+  1: 'https://sysbots.net/images/Smaller%20Pokeball_72px.png',
+  2: 'https://sysbots.net/images/Eevee_72px.png',
+  3: 'https://sysbots.net/images/Flareon_72px.png',
+  4: 'https://sysbots.net/images/Jolteon_72px.png',
+  5: 'https://sysbots.net/images/Vaporeon_72px.png',
+  6: 'https://sysbots.net/images/Umbreon_72px.png',
+  7: 'https://sysbots.net/images/Espeon_72px.png',
+  8: 'https://sysbots.net/images/Glaceon_72px.png',
+  9: 'https://sysbots.net/images/Leafeon_72px.png',
+  10: 'https://sysbots.net/images/Sylveon_72px.png',
   // Add more levels if needed.
 };
 
@@ -70,6 +77,242 @@ const badgeNames = {
   9: "Balance Badge",
   10: "Master Badge"
 };
+
+// Simple function to load and cache an image
+async function loadAndCacheImage(url) {
+  if (!url) return null;
+  
+  // Create a filename from the URL
+  const filename = url
+    .replace(/^https?:\/\//, '')
+    .replace(/[^a-zA-Z0-9]/g, '_')
+    .substring(0, 100) + '.png';
+  
+  const filePath = path.join(cacheDir, filename);
+  
+  // If the file exists in cache, load it directly
+  if (fs.existsSync(filePath)) {
+    try {
+      return await loadImage(filePath);
+    } catch (err) {
+      // If cached file is corrupted, delete it and try downloading again
+      try { fs.unlinkSync(filePath); } catch (e) {}
+    }
+  }
+  
+  // Otherwise, download it first
+  return new Promise((resolve, reject) => {
+    const https = require('https');
+    const file = fs.createWriteStream(filePath);
+    
+    const request = https.get(url, response => {
+      // Handle redirects
+      if (response.statusCode === 301 || response.statusCode === 302) {
+        file.close();
+        try { fs.unlinkSync(filePath); } catch (e) {}
+        loadAndCacheImage(response.headers.location)
+          .then(resolve)
+          .catch(reject);
+        return;
+      }
+      
+      if (response.statusCode !== 200) {
+        file.close();
+        try { fs.unlinkSync(filePath); } catch (e) {}
+        reject(new Error(`Failed to download image: ${response.statusCode}`));
+        return;
+      }
+      
+      response.pipe(file);
+      
+      file.on('finish', async () => {
+        file.close();
+        try {
+          const image = await loadImage(filePath);
+          resolve(image);
+        } catch (err) {
+          try { fs.unlinkSync(filePath); } catch (e) {}
+          reject(err);
+        }
+      });
+      
+      file.on('error', err => {
+        file.close();
+        try { fs.unlinkSync(filePath); } catch (e) {}
+        reject(err);
+      });
+    });
+    
+    request.on('error', err => {
+      file.close();
+      try { fs.unlinkSync(filePath); } catch (e) {}
+      reject(err);
+    });
+    
+    // Set timeout to avoid hanging
+    request.setTimeout(10000, () => {
+      request.abort();
+      file.close();
+      try { fs.unlinkSync(filePath); } catch (e) {}
+      reject(new Error('Request timeout'));
+    });
+  });
+}
+
+// Helper function to draw a rounded rectangle
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  if (width < 2 * radius) radius = width / 2;
+  if (height < 2 * radius) radius = height / 2;
+  
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.arcTo(x + width, y, x + width, y + radius, radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+  ctx.lineTo(x + radius, y + height);
+  ctx.arcTo(x, y + height, x, y + height - radius, radius);
+  ctx.lineTo(x, y + radius);
+  ctx.arcTo(x, y, x + radius, y, radius);
+  ctx.closePath();
+}
+
+// Function to create a level up card with badge centered correctly
+async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl, badgeName) {
+  const canvas = createCanvas(800, 450);
+  const ctx = canvas.getContext('2d');
+  
+  // Draw background
+  const gradient = ctx.createLinearGradient(0, 0, 800, 450);
+  gradient.addColorStop(0, '#16213e');
+  gradient.addColorStop(1, '#0f3460');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 800, 450);
+  
+  // Add header
+  ctx.fillStyle = '#FFD700'; // Gold color for achievements
+  ctx.fillRect(0, 0, 800, 60);
+  
+  // Add title
+  ctx.fillStyle = '#333333';
+  ctx.font = '32px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('🏅 UC Trainer Level Up! 🏅', 400, 40);
+  
+  // Add shadow for text
+  ctx.shadowColor = 'black';
+  ctx.shadowBlur = 3;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  
+  // Add congratulations text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '30px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Congratulations, ${username}!`, 400, 110);
+  
+  ctx.font = '26px Arial';
+  ctx.fillText(`You've reached UC Level ${level}!`, 400, 150);
+  
+  // Badge information
+  ctx.font = '24px Arial';
+  ctx.fillText(`New Gym Badge Unlocked: ${badgeName}`, 400, 190);
+  ctx.fillText(`Gym Badge ${level} of ${MAX_LEVEL}`, 400, 230);
+  
+  // Remove shadow for drawing shapes
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  
+  // Draw progress bar
+  const barWidth = 500;
+  const barHeight = 30;
+  const barX = 150;
+  const barY = 260;
+  const percent = currentXp / threshold;
+  
+  // Background of progress bar
+  ctx.fillStyle = 'rgba(45, 55, 72, 0.8)';
+  drawRoundedRect(ctx, barX, barY, barWidth, barHeight, barHeight/2);
+  ctx.fill();
+  
+  // Filled portion of progress bar
+  const fillWidth = Math.max(barHeight, Math.floor(barWidth * percent));
+  ctx.fillStyle = '#e94560';
+  drawRoundedRect(ctx, barX, barY, fillWidth, barHeight, barHeight/2);
+  ctx.fill();
+  
+  // Add XP text
+  ctx.shadowColor = 'black';
+  ctx.shadowBlur = 3;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`XP Progress: ${currentXp}/${threshold} XP (${Math.floor(percent * 100)}%)`, 400, 310);
+  
+  // Try to draw badge image centered
+  try {
+    if (badgeUrl) {
+      const badge = await loadAndCacheImage(badgeUrl);
+      
+      if (badge) {
+        // Calculate center position for badge
+        const badgeSize = 120;
+        const centerX = 400;
+        const centerY = 380;
+        
+        // Calculate scaling to maintain aspect ratio
+        const badgeRatio = badge.width / badge.height;
+        
+        // Determine dimensions while preserving aspect ratio
+        let drawWidth, drawHeight;
+        
+        if (badgeRatio >= 1) {
+          // Badge is wider than tall (or square)
+          drawWidth = badgeSize;
+          drawHeight = drawWidth / badgeRatio;
+        } else {
+          // Badge is taller than wide
+          drawHeight = badgeSize;
+          drawWidth = drawHeight * badgeRatio;
+        }
+        
+        // Calculate position to perfectly center
+        const drawX = centerX - (drawWidth / 2);
+        const drawY = centerY - (drawHeight / 2);
+        
+        // Draw badge
+        ctx.shadowColor = 'transparent';
+        ctx.drawImage(badge, drawX, drawY, drawWidth, drawHeight);
+      }
+    }
+  } catch (err) {
+    console.error('Error drawing badge:', err);
+    // Draw placeholder if badge fails
+    ctx.fillStyle = '#FFD700';
+    ctx.font = '60px Arial';
+    ctx.fillText('🏆', 400, 380);
+  }
+  
+  // Add footer
+  ctx.shadowColor = 'transparent';
+  ctx.fillStyle = '#FFD700';
+  ctx.fillRect(0, 430, 800, 20);
+  
+  ctx.shadowColor = 'black';
+  ctx.shadowBlur = 2;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
+  ctx.fillStyle = '#333333';
+  ctx.font = '14px Arial';
+  ctx.fillText('Union Circle Leveling System | This message will disappear in 60 seconds', 400, 445);
+  
+  return canvas.toBuffer();
+}
 
 // Function to add XP for a given user.
 // If override is false (normal XP gain) and user is at MAX_LEVEL, then no further XP is added.
@@ -192,6 +435,10 @@ const initLevelSystem = (client) => {
           .setImage(badgeUrl)
           .setFooter({ text: 'Union Circle Leveling System | This message will disappear in 60 seconds' })
           .setTimestamp();
+        
+        // Get user's name
+        const user = await client.users.fetch(userId);
+        const username = user ? user.username : "Trainer";
         
         // Send embed and delete after 60 seconds
         const levelUpMessage = await message.channel.send({ embeds: [embed] });

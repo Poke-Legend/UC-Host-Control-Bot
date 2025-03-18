@@ -109,6 +109,39 @@ const loadConfig = (channelName) => {
   return channelData;
 };
 
+// New helper function to check if a user is already registered in any capacity
+const isUserRegistered = (channelConfig, userId) => {
+  if (!channelConfig || !userId) return false;
+  
+  // Check if already marked as registered
+  if (channelConfig.registeredUsers && channelConfig.registeredUsers[userId]) {
+    return true;
+  }
+  
+  // Check if in queue
+  if (channelConfig.queue && channelConfig.queue.registrations) {
+    if (channelConfig.queue.registrations.some(reg => reg.userId === userId)) {
+      return true;
+    }
+  }
+  
+  // Check if in waiting list
+  if (channelConfig.waitingList) {
+    if (channelConfig.waitingList.some(reg => reg.userId === userId)) {
+      return true;
+    }
+  }
+  
+  // Check if in active session
+  if (channelConfig.activeSession) {
+    if (channelConfig.activeSession.some(reg => reg.userId === userId)) {
+      return true;
+    }
+  }
+  
+  return false;
+};
+
 module.exports = {
   createEmbed,
   sendEmbed,
@@ -117,4 +150,5 @@ module.exports = {
   pendingRegistrations,
   saveConfig,
   loadConfig,
+  isUserRegistered,
 };

@@ -1,0 +1,26 @@
+{
+  "lastCommands": {
+    "1095036363348377623": {
+      "timestamp": 1742265412276,
+      "command": "online"
+    }
+  },
+  "lastCodeEmbeds": {},
+  "registeredUsers": {
+    "782164994891448321": true
+  },
+  "queue": {
+    "registrations": []
+  },
+  "activeSession": [
+    {
+      "userId": "782164994891448321",
+      "ign": "Gmdp",
+      "pokemon": "Ride miraidon",
+      "pokemonLevel": "100",
+      "shiny": "Yes",
+      "holdingItem": "Mb"
+    }
+  ],
+  "waitingList": []
+}

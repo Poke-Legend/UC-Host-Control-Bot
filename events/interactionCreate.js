@@ -1,4 +1,3 @@
-// events/interactionCreate.js
 const { checkBan } = require('../utils/banSystem');
 const { loadConfig, pendingRegistrations, saveConfig } = require('../utils/helper');
 
@@ -28,6 +27,7 @@ module.exports = {
     // Handle modal submissions (e.g. registration modal)
     else if (interaction.isModalSubmit() && interaction.customId === 'registrationModal') {
       try {
+        // Check if user is banned
         const banResult = checkBan(interaction.user.id);
         if (banResult.banned) {
           await interaction.reply({
@@ -37,7 +37,24 @@ module.exports = {
           return;
         }
   
+        // Load channel configuration
         const channelName = interaction.channel.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        const channelConfig = loadConfig(channelName);
+        
+        // Check if user is already in the queue or waiting list
+        const userInQueue = channelConfig.queue.registrations.some(reg => reg.userId === interaction.user.id);
+        const userInWaitlist = channelConfig.waitingList.some(reg => reg.userId === interaction.user.id);
+        const userInActiveSession = channelConfig.activeSession.some(reg => reg.userId === interaction.user.id);
+        
+        if (userInQueue || userInWaitlist || userInActiveSession) {
+          await interaction.reply({
+            content: "⚠️ You're already registered in this Union Circle. You cannot register twice in the same queue or while in an active session.",
+            ephemeral: true,
+          });
+          return;
+        }
+        
+        // Process registration input
         const ign = interaction.fields.getTextInputValue('ignInput');
         const pokemon = interaction.fields.getTextInputValue('pokemonInput');
         const pokemonLevel = interaction.fields.getTextInputValue('pokemonLevelInput');
@@ -97,15 +114,29 @@ module.exports = {
   
         const channelName = interaction.channel.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
         const channelConfig = loadConfig(channelName);
-  
+        
+        // Double-check user isn't already in the waiting list or queue (in case they registered while this was pending)
+        const userInQueue = channelConfig.queue.registrations.some(reg => reg.userId === interaction.user.id);
+        const userInWaitlist = channelConfig.waitingList.some(reg => reg.userId === interaction.user.id);
+        const userInActiveSession = channelConfig.activeSession.some(reg => reg.userId === interaction.user.id);
+        
+        if (userInQueue || userInWaitlist || userInActiveSession) {
+          await interaction.update({
+            content: "⚠️ You're already registered in this Union Circle. You cannot register twice in the same queue or while in an active session.",
+            components: [],
+          });
+          delete pendingRegistrations[pendingKey];
+          return;
+        }
+        
+        // Add to waiting list and mark as registered
         channelConfig.waitingList.push(registrationEntry);
         channelConfig.registeredUsers[interaction.user.id] = true;
         saveConfig(channelName, channelConfig);
         delete pendingRegistrations[pendingKey];
   
-        
         await interaction.update({
-          content: 'Registration complete! Your information has been recorded.',
+          content: 'Registration complete! Your information has been recorded and you have been added to the waiting list.',
           components: [],
         });
       } catch (err) {

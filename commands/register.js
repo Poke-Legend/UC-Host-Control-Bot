@@ -1,4 +1,3 @@
-// commands/register.js
 const {
   SlashCommandBuilder,
   ModalBuilder,
@@ -28,7 +27,7 @@ module.exports = {
       // Immediate ban check
       const banResult = checkBan(interaction.user.id);
       if (banResult.banned) {
-         await interaction.reply({
+        await interaction.reply({
           content: `You are banned from Union Circle: ${banResult.reason}`,
           ephemeral: true,
         });
@@ -37,11 +36,24 @@ module.exports = {
 
       // Load channel-specific config (using sanitized channel name)
       const channelName = interaction.channel.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-       const channelConfig = loadConfig(channelName);
+      const channelConfig = loadConfig(channelName);
 
+      // Check if user is already registered
       if (channelConfig.registeredUsers && channelConfig.registeredUsers[interaction.user.id]) {
         return interaction.reply({
-          content: "You are already registered. Use `$resetregister` to reset registrations.",
+          content: "You are already registered. Wait for the host to reset registrations or use `$resetuser` to clear your registration.",
+          ephemeral: true,
+        });
+      }
+      
+      // Check if user is already in queue, waitlist or active session
+      const userInQueue = channelConfig.queue.registrations.some(reg => reg.userId === interaction.user.id);
+      const userInWaitlist = channelConfig.waitingList.some(reg => reg.userId === interaction.user.id);
+      const userInActiveSession = channelConfig.activeSession.some(reg => reg.userId === interaction.user.id);
+      
+      if (userInQueue || userInWaitlist || userInActiveSession) {
+        return interaction.reply({
+          content: "⚠️ You're already in the queue, waitlist, or active session for this Union Circle. You cannot register twice.",
           ephemeral: true,
         });
       }
@@ -84,7 +96,7 @@ module.exports = {
       );
 
       await interaction.showModal(modal);
-      } catch (err) {
+    } catch (err) {
       console.error('[Register] Error in /register command:', err);
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({

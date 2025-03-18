@@ -1,147 +1,135 @@
 {
-  "452840139882758155": {
-    "xp": 150,
-    "level": 2,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png",
-      "https://i.imgur.com/lPW4LC9.png"
-    ]
-  },
-  "782164994891448321": {
-    "xp": 50,
-    "level": 3,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png",
-      "https://i.imgur.com/lPW4LC9.png",
-      "https://i.imgur.com/Y0dpWdL.png"
-    ]
-  },
   "99954108894552064": {
-    "xp": 150,
-    "level": 2,
+    "xp": 85,
+    "level": 1,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png",
-      "https://i.imgur.com/lPW4LC9.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
     ],
-    "modified": true
-  },
-  "1289233632057098415": {
-    "xp": 70,
-    "level": 1,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
-    ]
-  },
-  "286397907010322432": {
-    "xp": 15,
-    "level": 2,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png",
-      "https://i.imgur.com/lPW4LC9.png"
-    ]
-  },
-  "1051680882253123616": {
-    "xp": 70,
-    "level": 1,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
-    ]
+    "modified": false
   },
   "298238638419083266": {
-    "xp": 5,
+    "xp": 10,
     "level": 1,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
     ],
     "modified": false
   },
-  "1087152322968309862": {
-    "xp": 5,
-    "level": 1,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
-    ],
-    "modified": false
-  },
-  "596304605709860904": {
-    "xp": 90,
+  "782164994891448321": {
+    "xp": 180,
     "level": 2,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png",
-      "https://i.imgur.com/lPW4LC9.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
+      "https://sysbots.net/images/Eevee_72px.png"
     ],
     "modified": false
   },
-  "1020776456734904411": {
-    "xp": 10,
+  "452840139882758155": {
+    "xp": 25,
     "level": 1,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
     ],
     "modified": false
   },
-  "1236833939478282270": {
-    "xp": 10,
-    "level": 1,
+  "1236977019401801801": {
+    "xp": 115,
+    "level": 3,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
-    ],
-    "modified": false
-  },
-  "1006266718127141014": {
-    "xp": 20,
-    "level": 1,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
-    ],
-    "modified": false
-  },
-  "1009641900107644998": {
-    "xp": 5,
-    "level": 1,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
+      "https://sysbots.net/images/Eevee_72px.png",
+      "https://sysbots.net/images/Flareon_72px.png"
     ],
     "modified": false
   },
   "693172805621121085": {
-    "xp": 85,
+    "xp": 90,
     "level": 2,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png",
-      "https://i.imgur.com/lPW4LC9.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
+      "https://sysbots.net/images/Eevee_72px.png"
+    ],
+    "modified": false
+  },
+  "988128942978367488": {
+    "xp": 70,
+    "level": 2,
+    "badges": [
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
+      "https://sysbots.net/images/Eevee_72px.png"
+    ],
+    "modified": false
+  },
+  "771823248908353557": {
+    "xp": 80,
+    "level": 1,
+    "badges": [
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+    ],
+    "modified": false
+  },
+  "1258354281095106654": {
+    "xp": 15,
+    "level": 1,
+    "badges": [
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+    ],
+    "modified": false
+  },
+  "286397907010322432": {
+    "xp": 20,
+    "level": 1,
+    "badges": [
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+    ],
+    "modified": false
+  },
+  "1006266718127141014": {
+    "xp": 40,
+    "level": 2,
+    "badges": [
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
+      "https://sysbots.net/images/Eevee_72px.png"
+    ],
+    "modified": false
+  },
+  "1289233632057098415": {
+    "xp": 15,
+    "level": 1,
+    "badges": [
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
     ],
     "modified": false
   },
   "789596605090627635": {
-    "xp": 15,
-    "level": 1,
-    "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
-    ],
-    "modified": false
-  },
-  "789121250311667753": {
     "xp": 5,
     "level": 1,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
     ],
     "modified": false
   },
-  "1147645739418275892": {
+  "326565613285801984": {
+    "xp": 45,
+    "level": 1,
+    "badges": [
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+    ],
+    "modified": false
+  },
+  "596304605709860904": {
     "xp": 5,
     "level": 1,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
     ],
     "modified": false
   },
-  "1129464865627578449": {
-    "xp": 10,
+  "754156803906076712": {
+    "xp": 5,
     "level": 1,
     "badges": [
-      "https://i.imgur.com/QAOmpNv.png"
+      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
     ],
     "modified": false
   }
