@@ -1,7 +1,7 @@
 // levels/levelSystem.js
 const fs = require('fs');
 const path = require('path');
-const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { AttachmentBuilder } = require('discord.js');
 const { createCanvas, loadImage } = require('canvas');
 
 // Path to the leveling database file
@@ -178,7 +178,7 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 }
 
 // Function to create a level up card with badge centered correctly
-async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl, badgeName) {
+async function createLevelUpCard(user, level, currentXp, threshold, badgeUrl, badgeName) {
   const canvas = createCanvas(800, 450);
   const ctx = canvas.getContext('2d');
   
@@ -188,6 +188,46 @@ async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl
   gradient.addColorStop(1, '#0f3460');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 800, 450);
+  
+  // Try to load background image
+  const bgUrl = process.env.LEVEL_BACKGROUND_URL || 'https://sysbots.net/images/pokemon-legends.png';
+  try {
+    const backgroundImage = await loadAndCacheImage(bgUrl);
+    
+    if (backgroundImage) {
+      // Calculate dimensions to cover the entire canvas while maintaining aspect ratio
+      const bgRatio = backgroundImage.width / backgroundImage.height;
+      const canvasRatio = canvas.width / canvas.height;
+      
+      let drawWidth, drawHeight, drawX, drawY;
+      
+      if (bgRatio > canvasRatio) {
+        // Image is wider than the canvas (relative to height)
+        drawHeight = canvas.height;
+        drawWidth = drawHeight * bgRatio;
+        drawX = (canvas.width - drawWidth) / 2;
+        drawY = 0;
+      } else {
+        // Image is taller than the canvas (relative to width)
+        drawWidth = canvas.width;
+        drawHeight = drawWidth / bgRatio;
+        drawX = 0;
+        drawY = (canvas.height - drawHeight) / 2;
+      }
+      
+      // Clear the canvas before drawing the background image
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw the background image to cover the entire canvas
+      ctx.drawImage(backgroundImage, drawX, drawY, drawWidth, drawHeight);
+      
+      // Add semi-transparent overlay for better text visibility
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(0, 0, 800, 450);
+    }
+  } catch (err) {
+    console.error('Error loading background image:', err);
+  }
   
   // Add header
   ctx.fillStyle = '#FFD700'; // Gold color for achievements
@@ -199,6 +239,42 @@ async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl
   ctx.textAlign = 'center';
   ctx.fillText('🏅 UC Trainer Level Up! 🏅', 400, 40);
   
+  // Add avatar if available
+  try {
+    let avatarURL = user.displayAvatarURL({ extension: 'png', size: 128 });
+    if (avatarURL) {
+      const avatar = await loadImage(avatarURL);
+      
+      // Draw circle for avatar frame
+      ctx.beginPath();
+      ctx.arc(130, 150, 70, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.fillStyle = '#333333';
+      ctx.fill();
+      
+      // Draw the avatar (creating a circle by clipping)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(130, 150, 65, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(avatar, 65, 85, 130, 130);
+      ctx.restore();
+    }
+  } catch (err) {
+    console.error('Error loading avatar:', err);
+    // Draw avatar letter instead
+    ctx.fillStyle = '#3498db';
+    ctx.beginPath();
+    ctx.arc(130, 150, 65, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '60px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(user.username.charAt(0).toUpperCase(), 130, 170);
+  }
+  
   // Add shadow for text
   ctx.shadowColor = 'black';
   ctx.shadowBlur = 3;
@@ -208,16 +284,16 @@ async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl
   // Add congratulations text
   ctx.fillStyle = '#ffffff';
   ctx.font = '30px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(`Congratulations, ${username}!`, 400, 110);
+  ctx.textAlign = 'left';
+  ctx.fillText(`Congratulations, ${user.username}!`, 230, 130);
   
   ctx.font = '26px Arial';
-  ctx.fillText(`You've reached UC Level ${level}!`, 400, 150);
+  ctx.fillText(`You've reached UC Level ${level}!`, 230, 170);
   
   // Badge information
   ctx.font = '24px Arial';
-  ctx.fillText(`New Gym Badge Unlocked: ${badgeName}`, 400, 190);
-  ctx.fillText(`Gym Badge ${level} of ${MAX_LEVEL}`, 400, 230);
+  ctx.fillText(`New Gym Badge Unlocked: ${badgeName}`, 230, 210);
+  ctx.fillText(`Gym Badge ${level} of ${MAX_LEVEL}`, 230, 250);
   
   // Remove shadow for drawing shapes
   ctx.shadowColor = 'transparent';
@@ -228,8 +304,8 @@ async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl
   // Draw progress bar
   const barWidth = 500;
   const barHeight = 30;
-  const barX = 150;
-  const barY = 260;
+  const barX = 230;
+  const barY = 280;
   const percent = currentXp / threshold;
   
   // Background of progress bar
@@ -252,7 +328,7 @@ async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl
   ctx.fillStyle = '#ffffff';
   ctx.font = '18px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText(`XP Progress: ${currentXp}/${threshold} XP (${Math.floor(percent * 100)}%)`, 400, 310);
+  ctx.fillText(`XP Progress: ${currentXp}/${threshold} XP (${Math.floor(percent * 100)}%)`, barX + (barWidth / 2), barY + 20);
   
   // Try to draw badge image centered
   try {
@@ -262,8 +338,8 @@ async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl
       if (badge) {
         // Calculate center position for badge
         const badgeSize = 120;
-        const centerX = 400;
-        const centerY = 380;
+        const centerX = 130;
+        const centerY = 350;
         
         // Calculate scaling to maintain aspect ratio
         const badgeRatio = badge.width / badge.height;
@@ -295,7 +371,8 @@ async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl
     // Draw placeholder if badge fails
     ctx.fillStyle = '#FFD700';
     ctx.font = '60px Arial';
-    ctx.fillText('🏆', 400, 380);
+    ctx.textAlign = 'center';
+    ctx.fillText('🏆', 130, 350);
   }
   
   // Add footer
@@ -309,6 +386,7 @@ async function createLevelUpCard(username, level, currentXp, threshold, badgeUrl
   ctx.shadowOffsetY = 1;
   ctx.fillStyle = '#333333';
   ctx.font = '14px Arial';
+  ctx.textAlign = 'center';
   ctx.fillText('Union Circle Leveling System | This message will disappear in 60 seconds', 400, 445);
   
   return canvas.toBuffer();
@@ -421,27 +499,28 @@ const initLevelSystem = (client) => {
         const badgeName = badgeNames[newLevel] || `Level ${newLevel} Badge`;
         const nextThreshold = getXpThreshold(newLevel);
         const currentXp = xpData[userId].xp;
-        const bar = progressBar(currentXp, nextThreshold);
-        
-        // Create a rich embed for the level up announcement
-        const embed = new EmbedBuilder()
-          .setColor('#FFD700') // Gold color for achievements
-          .setTitle(`🏅 UC Trainer Level Up! 🏅`)
-          .setDescription(`Congratulations <@${userId}>! You've reached **UC Level ${newLevel}**!`)
-          .addFields(
-            { name: `🔥 New Gym Badge Unlocked: ${badgeName}`, value: `Gym Badge ${newLevel} of ${MAX_LEVEL}`, inline: false },
-            { name: 'XP Progress', value: `${currentXp}/${nextThreshold} XP\n${bar}`, inline: false }
-          )
-          .setImage(badgeUrl)
-          .setFooter({ text: 'Union Circle Leveling System | This message will disappear in 60 seconds' })
-          .setTimestamp();
-        
-        // Get user's name
+
+        // Fetch the user
         const user = await client.users.fetch(userId);
-        const username = user ? user.username : "Trainer";
         
-        // Send embed and delete after 60 seconds
-        const levelUpMessage = await message.channel.send({ embeds: [embed] });
+        // Generate the level up card using Canvas
+        const cardBuffer = await createLevelUpCard(
+          user, 
+          newLevel, 
+          currentXp, 
+          nextThreshold, 
+          badgeUrl, 
+          badgeName
+        );
+        
+        // Create an attachment from the buffer
+        const attachment = new AttachmentBuilder(cardBuffer, { name: 'level-up-card.png' });
+        
+        // Send the level up card as a message
+        const levelUpMessage = await message.channel.send({
+          content: `🎉 Congratulations <@${userId}>! You've leveled up!`,
+          files: [attachment]
+        });
         
         // Delete the message after 60 seconds
         setTimeout(() => {

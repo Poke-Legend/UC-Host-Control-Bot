@@ -1,5 +1,8 @@
+// events/interactionCreate.js
 const { checkBan } = require('../utils/banSystem');
 const { loadConfig, pendingRegistrations, saveConfig } = require('../utils/helper');
+const { AttachmentBuilder } = require('discord.js');
+const { generateRegistrationCard } = require('../utils/registrationCard');
 
 module.exports = {
   name: 'interactionCreate',
@@ -135,10 +138,32 @@ module.exports = {
         saveConfig(channelName, channelConfig);
         delete pendingRegistrations[pendingKey];
   
+        // Update the interaction's message first to remove the select menu
         await interaction.update({
-          content: 'Registration complete! Your information has been recorded and you have been added to the waiting list.',
+          content: 'Registration complete! Check below for your registration card.',
           components: [],
         });
+        
+        try {
+          // Generate the registration card using Canvas
+          const cardBuffer = await generateRegistrationCard(interaction.user, registrationEntry);
+          
+          // Create an attachment from the buffer
+          const attachment = new AttachmentBuilder(cardBuffer, { name: 'registration-card.png' });
+          
+          // Send the registration card as a follow-up message
+          await interaction.followUp({
+            files: [attachment],
+            ephemeral: false // Make it visible to everyone in the channel
+          });
+          
+        } catch (error) {
+          console.error('[InteractionCreate] Error generating registration card:', error);
+          await interaction.followUp({
+            content: 'Your registration has been completed, but there was an error generating your registration card.',
+            ephemeral: true
+          });
+        }
       } catch (err) {
         console.error('[InteractionCreate] Error processing select menu submission:', err);
         if (!interaction.replied && !interaction.deferred) {
