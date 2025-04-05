@@ -1,7 +1,96 @@
 // commands/offline.js
-const { sendEmbed, safeDelete, clearMessages, saveConfig, loadConfig } = require('../utils/helper');
+const { sendEmbed, safeDelete, saveConfig, loadConfig } = require('../utils/helper');
 const { PermissionsBitField } = require('discord.js');
 const config = require('../utils/config');
+
+/**
+ * Enhanced function to thoroughly clear all messages in a channel
+ * Uses a recursive approach to ensure complete deletion even with many messages
+ * @param {TextChannel} channel - The Discord channel to clear
+ * @returns {Promise<void>}
+ */
+async function thoroughlyClearMessages(channel) {
+  console.log(`[Offline] Starting thorough message clearing in channel: ${channel.name}`);
+  
+  // Discord's bulk delete limit is 100 messages at once and only works for messages < 14 days old
+  const fourteenDays = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+  const now = Date.now();
+  let totalDeleted = 0;
+  let fetchedCount = 0;
+  let deletedBatch = 0;
+  let continueDeletion = true;
+  
+  // Keep fetching and deleting until no messages are returned
+  while (continueDeletion) {
+    try {
+      // Fetch a batch of messages (up to 100)
+      const messages = await channel.messages.fetch({ limit: 100 });
+      fetchedCount = messages.size;
+      
+      console.log(`[Offline] Fetched ${fetchedCount} messages`);
+      
+      if (fetchedCount === 0) {
+        // No more messages to delete, we can exit the loop
+        continueDeletion = false;
+        break;
+      }
+      
+      // Filter for messages less than 14 days old (eligible for bulkDelete)
+      const recentMessages = messages.filter(m => (now - m.createdTimestamp) < fourteenDays);
+      
+      if (recentMessages.size > 1) {
+        // Use bulk delete for efficiency if we have multiple recent messages
+        await channel.bulkDelete(recentMessages, true);
+        deletedBatch = recentMessages.size;
+      } else {
+        // Delete messages one by one if they're either:
+        // 1. Too old for bulk delete (> 14 days)
+        // 2. Only a single message was fetched
+        deletedBatch = 0;
+        for (const [_, msg] of messages) {
+          try {
+            await msg.delete();
+            deletedBatch++;
+          } catch (deleteErr) {
+            if (deleteErr.code === 10008) {
+              // Message already deleted, just continue
+              console.log('[Offline] Message already deleted');
+            } else {
+              console.error('[Offline] Error deleting individual message:', deleteErr);
+            }
+          }
+          
+          // Small delay to avoid rate limiting
+          await new Promise(r => setTimeout(r, 250));
+        }
+      }
+      
+      totalDeleted += deletedBatch;
+      console.log(`[Offline] Deleted ${deletedBatch} messages in this batch, ${totalDeleted} total so far`);
+      
+      // Safety check to avoid infinite loops
+      if (deletedBatch === 0) {
+        console.log('[Offline] No messages were deleted in this batch, ending deletion process');
+        continueDeletion = false;
+      }
+      
+      // Small delay between batches to avoid rate limits
+      await new Promise(r => setTimeout(r, 1000));
+      
+    } catch (err) {
+      if (err.code === 50035) {
+        // "Invalid Form Body" - likely empty channel or all messages too old
+        console.log('[Offline] No valid messages to delete, ending deletion process');
+        continueDeletion = false;
+      } else {
+        console.error('[Offline] Error in message deletion loop:', err);
+        // Continue to try despite errors
+      }
+    }
+  }
+  
+  console.log(`[Offline] Message deletion complete. Total deleted: ${totalDeleted}`);
+}
 
 module.exports = {
   name: 'offline',
@@ -48,12 +137,30 @@ module.exports = {
         console.error('[Offline] Error updating channel permissions:', error);
       }
       
-      // Clear **all** messages in the channel before posting the offline embed.
+      // First, send a temporary message to let users know we're clearing the channel
+      let tempMessage;
       try {
-        await clearMessages(channel);
-        console.log('[Offline] All channel messages cleared.');
+        tempMessage = await channel.send('**Clearing all messages...** This channel is going offline.');
+        console.log('[Offline] Temporary message sent');
       } catch (error) {
-        console.error('[Offline] Error clearing messages:', error);
+        console.error('[Offline] Error sending temporary message:', error);
+      }
+      
+      // Thoroughly clear ALL messages in the channel before posting the offline embed.
+      try {
+        await thoroughlyClearMessages(channel);
+        console.log('[Offline] All channel messages cleared thoroughly.');
+      } catch (error) {
+        console.error('[Offline] Error thoroughly clearing messages:', error);
+      }
+      
+      // Delete the temporary message too, if it exists
+      if (tempMessage) {
+        try {
+          await tempMessage.delete();
+        } catch (error) {
+          console.error('[Offline] Error deleting temporary message:', error);
+        }
       }
       
       // Reset all queues: clear registrations, waiting list, active session, and registered users.

@@ -8,101 +8,25 @@ const { AttachmentBuilder } = require('discord.js');
 const { createCanvas, loadImage } = require('canvas');
 const config = require('../utils/config');
 const path = require('path');
-const fs = require('fs');
-const https = require('https');
 
 // ===================================
-// Image Caching System
+// Image Loading Function
 // ===================================
-
-// Create cache directory if it doesn't exist
-const cacheDir = path.join(__dirname, '..', 'cache');
-if (!fs.existsSync(cacheDir)) {
-  fs.mkdirSync(cacheDir, { recursive: true });
-}
 
 /**
- * Load an image from URL and cache it for future use
+ * Load an image directly from URL without caching
  * @param {string} url - The URL of the image to load
  * @returns {Promise<Image>} - The loaded image
  */
-async function loadAndCacheImage(url) {
+async function loadImageFromUrl(url) {
   if (!url) return null;
   
-  // Create a filename from the URL
-  const filename = url
-    .replace(/^https?:\/\//, '')
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    .substring(0, 100) + '.png';
-  
-  const filePath = path.join(cacheDir, filename);
-  
-  // If the file exists in cache, load it directly
-  if (fs.existsSync(filePath)) {
-    try {
-      return await loadImage(filePath);
-    } catch (err) {
-      // If cached file is corrupted, delete it and try downloading again
-      try { fs.unlinkSync(filePath); } catch (e) {}
-    }
+  try {
+    return await loadImage(url);
+  } catch (err) {
+    console.error('Error loading image:', err);
+    throw err;
   }
-  
-  // Otherwise, download it first
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(filePath);
-    
-    const request = https.get(url, response => {
-      // Handle redirects
-      if (response.statusCode === 301 || response.statusCode === 302) {
-        file.close();
-        try { fs.unlinkSync(filePath); } catch (e) {}
-        loadAndCacheImage(response.headers.location)
-          .then(resolve)
-          .catch(reject);
-        return;
-      }
-      
-      if (response.statusCode !== 200) {
-        file.close();
-        try { fs.unlinkSync(filePath); } catch (e) {}
-        reject(new Error(`Failed to download image: ${response.statusCode}`));
-        return;
-      }
-      
-      response.pipe(file);
-      
-      file.on('finish', async () => {
-        file.close();
-        try {
-          const image = await loadImage(filePath);
-          resolve(image);
-        } catch (err) {
-          try { fs.unlinkSync(filePath); } catch (e) {}
-          reject(err);
-        }
-      });
-      
-      file.on('error', err => {
-        file.close();
-        try { fs.unlinkSync(filePath); } catch (e) {}
-        reject(err);
-      });
-    });
-    
-    request.on('error', err => {
-      file.close();
-      try { fs.unlinkSync(filePath); } catch (e) {}
-      reject(err);
-    });
-    
-    // Set timeout to avoid hanging
-    request.setTimeout(10000, () => {
-      request.abort();
-      file.close();
-      try { fs.unlinkSync(filePath); } catch (e) {}
-      reject(new Error('Request timeout'));
-    });
-  });
 }
 
 // ===================================
@@ -125,26 +49,9 @@ async function createFlyPlatosCard(authorName, imageUrl) {
   ctx.fillStyle = '#16213e'; // Dark blue
   ctx.fillRect(0, 0, 800, 450);
   
-  // === Header (Top Section) ===
-  // Add semi-transparent top banner
-  ctx.fillStyle = 'rgba(0, 153, 255, 0.8)'; // Discord blue with 80% opacity
-  ctx.fillRect(0, 0, 800, 80);
-  
-  // Add title with shadow for better readability
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-  ctx.shadowBlur = 4;
-  ctx.shadowOffsetX = 3;
-  ctx.shadowOffsetY = 3;
-  
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 38px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('Platos VIP Airline', 400, 40);
-  
   // === Main Image (Background) ===
   try {
-    const flyImage = await loadAndCacheImage(imageUrl);
+    const flyImage = await loadImageFromUrl(imageUrl);
     
     if (flyImage) {
       // Calculate dimensions to cover the entire canvas while maintaining aspect ratio
@@ -176,11 +83,28 @@ async function createFlyPlatosCard(authorName, imageUrl) {
     // If image fails to load, we'll just show the gradient background
   }
   
+  // === Header (Top Section) ===
+  // Add purple top banner
+  ctx.fillStyle = 'rgba(128, 0, 128, 0.8)'; // Purple with 80% opacity
+  ctx.fillRect(0, 0, 800, 80);
+  
+  // Add title with shadow for better readability
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 3;
+  ctx.shadowOffsetY = 3;
+  
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 38px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Los Platos VIP Airline', 400, 40);
+  
   // === Message (Bottom Section) ===
   // Add semi-transparent background for text at the bottom to ensure visibility
   ctx.shadowColor = 'transparent'; // Remove shadow for rectangle
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.fillRect(0, 330, 800, 120);
+  ctx.fillRect(0, 310, 800, 110);
   
   // Restore shadow for text
   ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
@@ -199,27 +123,27 @@ async function createFlyPlatosCard(authorName, imageUrl) {
   const locationText = `and head to Los Platos`;
   const hostText = `to meet with ${authorName}`;
   
-  ctx.fillText(messageText, 400, 360);
-  ctx.fillText(locationText, 400, 395);
-  ctx.fillText(hostText, 400, 430);
-  
-  return canvas.toBuffer();
+  ctx.fillText(messageText, 400, 330);
+  ctx.fillText(locationText, 400, 360);
+  ctx.fillText(hostText, 400, 390);
   
   // === Footer ===
-  // Add footer bar
+  // Add footer bar with clean design
   ctx.shadowColor = 'transparent'; // Remove shadow for the footer rectangle
-  ctx.fillStyle = '#0099ff';
-  ctx.fillRect(0, 430, 800, 20);
+  ctx.fillStyle = '#800080'; // Purple color matching the header
+  ctx.fillRect(0, 425, 800, 25);
   
   // Add footer text with subtle shadow
   ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
   ctx.shadowBlur = 2;
   ctx.fillStyle = '#ffffff';
-  ctx.font = '14px Arial';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
   
   // Use dynamic year
   const year = new Date().getFullYear();
-  ctx.fillText(`© ${year} Pokémon Legends`, 400, 445);
+  ctx.fillText(`© ${year} Pokémon Legends`, 400, 437);
   
   return canvas.toBuffer();
 }
@@ -276,6 +200,7 @@ module.exports = {
       });
       
     } catch (error) {
+      console.error('Error in flyplatos command:', error);
       message.channel.send({
         content: 'There was an error generating the Los Platos airline image.'
       });

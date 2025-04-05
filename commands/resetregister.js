@@ -1,11 +1,13 @@
+// commands/resetregister.js
 const { sendEmbed, saveConfig } = require('../utils/helper');
+const config = require('../utils/config');
 
 module.exports = {
   name: 'resetregister',
   description: 'Reset user registration data (queue and waiting list remain intact)',
   async execute(message, args, channelConfig, client) {
     const hasPermission = message.member.roles.cache.some(role =>
-      require('../utils/config').allowedRoleIds.includes(role.id)
+      config.allowedRoleIds.includes(role.id)
     );
     if (!hasPermission) {
       return sendEmbed(

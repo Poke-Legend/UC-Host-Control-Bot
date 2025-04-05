@@ -1,15 +1,5 @@
 // utils/registrationCard.js
 const { createCanvas, loadImage } = require('canvas');
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
-// No level system import needed
-
-// Create cache directory if it doesn't exist
-const cacheDir = path.join(__dirname, '..', 'cache');
-if (!fs.existsSync(cacheDir)) {
-  fs.mkdirSync(cacheDir, { recursive: true });
-}
 
 // Helper function to draw a rounded rectangle
 function drawRoundedRect(ctx, x, y, width, height, radius) {
@@ -29,84 +19,16 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
-// Simple function to load and cache an image
-async function loadAndCacheImage(url) {
+// Simple function to load an image directly
+async function loadImageDirectly(url) {
   if (!url) return null;
   
-  // Create a filename from the URL
-  const filename = url
-    .replace(/^https?:\/\//, '')
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    .substring(0, 100) + '.png';
-  
-  const filePath = path.join(cacheDir, filename);
-  
-  // If the file exists in cache, load it directly
-  if (fs.existsSync(filePath)) {
-    try {
-      return await loadImage(filePath);
-    } catch (err) {
-      // If cached file is corrupted, delete it and try downloading again
-      try { fs.unlinkSync(filePath); } catch (e) {}
-    }
+  try {
+    return await loadImage(url);
+  } catch (err) {
+    console.error('Error loading image:', err);
+    return null;
   }
-  
-  // Otherwise, download it first
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(filePath);
-    
-    const request = https.get(url, response => {
-      // Handle redirects
-      if (response.statusCode === 301 || response.statusCode === 302) {
-        file.close();
-        try { fs.unlinkSync(filePath); } catch (e) {}
-        loadAndCacheImage(response.headers.location)
-          .then(resolve)
-          .catch(reject);
-        return;
-      }
-      
-      if (response.statusCode !== 200) {
-        file.close();
-        try { fs.unlinkSync(filePath); } catch (e) {}
-        reject(new Error(`Failed to download image: ${response.statusCode}`));
-        return;
-      }
-      
-      response.pipe(file);
-      
-      file.on('finish', async () => {
-        file.close();
-        try {
-          const image = await loadImage(filePath);
-          resolve(image);
-        } catch (err) {
-          try { fs.unlinkSync(filePath); } catch (e) {}
-          reject(err);
-        }
-      });
-      
-      file.on('error', err => {
-        file.close();
-        try { fs.unlinkSync(filePath); } catch (e) {}
-        reject(err);
-      });
-    });
-    
-    request.on('error', err => {
-      file.close();
-      try { fs.unlinkSync(filePath); } catch (e) {}
-      reject(err);
-    });
-    
-    // Set timeout to avoid hanging
-    request.setTimeout(10000, () => {
-      request.abort();
-      file.close();
-      try { fs.unlinkSync(filePath); } catch (e) {}
-      reject(new Error('Request timeout'));
-    });
-  });
 }
 
 /**
@@ -131,7 +53,7 @@ async function generateRegistrationCard(user, registration) {
   const bgUrl = process.env.LEVEL_BACKGROUND_URL || 'https://sysbots.net/images/pokemon-legends.png';
   if (bgUrl) {
     try {
-      const backgroundImage = await loadAndCacheImage(bgUrl);
+      const backgroundImage = await loadImageDirectly(bgUrl);
       
       if (backgroundImage) {
         // Calculate dimensions to cover the entire canvas while maintaining aspect ratio
