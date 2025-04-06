@@ -1,7 +1,7 @@
 // events/interactionCreate.js
 const { checkBan } = require('../utils/banSystem');
 const { loadConfig, pendingRegistrations, saveConfig } = require('../utils/helper');
-const { AttachmentBuilder } = require('discord.js');
+const { AttachmentBuilder, StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
 const { generateRegistrationCard } = require('../utils/registrationCard');
 
 module.exports = {
@@ -67,20 +67,20 @@ module.exports = {
         const pendingKey = `${interaction.channel.id}-${interaction.user.id}`;
         pendingRegistrations[pendingKey] = { ign, pokemon, pokemonLevel, holdingItem };
   
-        const { StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
-        const selectMenu = new StringSelectMenuBuilder()
-          .setCustomId('shinySelect')
-          .setPlaceholder('Select whether your Pokémon is shiny...')
+        // First ask for Mega information
+        const megaSelectMenu = new StringSelectMenuBuilder()
+          .setCustomId('megaSelect')
+          .setPlaceholder('Is your Pokémon a Mega Evolution?')
           .addOptions([
-            { label: 'Yes', description: 'It is shiny!', value: 'Yes' },
-            { label: 'No', description: 'It is not shiny.', value: 'No' },
+            { label: 'Yes', description: 'It is a Mega Evolution', value: 'Yes' },
+            { label: 'No', description: 'It is not a Mega Evolution', value: 'No' },
           ]);
   
-        const row = new ActionRowBuilder().addComponents(selectMenu);
+        const megaRow = new ActionRowBuilder().addComponents(megaSelectMenu);
   
         await interaction.reply({
-          content: 'Please select whether your Pokémon is shiny:',
-          components: [row],
+          content: 'Please select whether your Pokémon is a Mega Evolution:',
+          components: [megaRow],
           ephemeral: true,
         });
       } catch (err) {
@@ -88,6 +88,110 @@ module.exports = {
         if (!interaction.replied && !interaction.deferred) {
           await interaction.reply({
             content: 'There was an error processing your submission. Please try again later.',
+            ephemeral: true,
+          });
+        }
+      }
+    }
+    // Handle Mega selection
+    else if (interaction.isStringSelectMenu() && interaction.customId === 'megaSelect') {
+      try {
+        const pendingKey = `${interaction.channel.id}-${interaction.user.id}`;
+        const pending = pendingRegistrations[pendingKey];
+        if (!pending) {
+          return interaction.update({
+            content: 'No pending registration found.',
+            components: [],
+          });
+        }
+  
+        const megaValue = interaction.values[0];
+        pending.mega = megaValue;
+        
+        // If they selected Yes for Mega, show another input for Mega details
+        if (megaValue === 'Yes') {
+          const { TextInputBuilder, TextInputStyle, ModalBuilder } = require('discord.js');
+          
+          const megaModal = new ModalBuilder()
+            .setCustomId('megaDetailsModal')
+            .setTitle('Mega Evolution Details');
+            
+          const megaDetailsInput = new TextInputBuilder()
+            .setCustomId('megaDetailsInput')
+            .setLabel('Mega Evolution Details')
+            .setPlaceholder('e.g., Mega Charizard X, Primal Kyogre')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
+            
+          megaModal.addComponents(
+            new ActionRowBuilder().addComponents(megaDetailsInput)
+          );
+          
+          await interaction.showModal(megaModal);
+        } else {
+          // If they selected No for Mega, proceed to Shiny selection
+          const shinySelectMenu = new StringSelectMenuBuilder()
+            .setCustomId('shinySelect')
+            .setPlaceholder('Select whether your Pokémon is shiny...')
+            .addOptions([
+              { label: 'Yes', description: 'It is shiny!', value: 'Yes' },
+              { label: 'No', description: 'It is not shiny.', value: 'No' },
+            ]);
+    
+          const shinyRow = new ActionRowBuilder().addComponents(shinySelectMenu);
+    
+          await interaction.update({
+            content: 'Please select whether your Pokémon is shiny:',
+            components: [shinyRow],
+          });
+        }
+      } catch (err) {
+        console.error('[InteractionCreate] Error processing mega selection:', err);
+        if (!interaction.replied && !interaction.deferred) {
+          await interaction.reply({
+            content: 'There was an error processing your selection. Please try again later.',
+            ephemeral: true,
+          });
+        }
+      }
+    }
+    // Handle Mega details modal submission
+    else if (interaction.isModalSubmit() && interaction.customId === 'megaDetailsModal') {
+      try {
+        const pendingKey = `${interaction.channel.id}-${interaction.user.id}`;
+        const pending = pendingRegistrations[pendingKey];
+        if (!pending) {
+          return interaction.reply({
+            content: 'No pending registration found.',
+            ephemeral: true,
+          });
+        }
+        
+        // Get the mega details
+        const megaDetails = interaction.fields.getTextInputValue('megaDetailsInput');
+        pending.megaDetails = megaDetails;
+        
+        // Now proceed to Shiny selection
+        const shinySelectMenu = new StringSelectMenuBuilder()
+          .setCustomId('shinySelect')
+          .setPlaceholder('Select whether your Pokémon is shiny...')
+          .addOptions([
+            { label: 'Yes', description: 'It is shiny!', value: 'Yes' },
+            { label: 'No', description: 'It is not shiny.', value: 'No' },
+          ]);
+  
+        const shinyRow = new ActionRowBuilder().addComponents(shinySelectMenu);
+  
+        await interaction.reply({
+          content: 'Please select whether your Pokémon is shiny:',
+          components: [shinyRow],
+          ephemeral: true,
+        });
+      } catch (err) {
+        console.error('[InteractionCreate] Error processing mega details:', err);
+        if (!interaction.replied && !interaction.deferred) {
+          await interaction.reply({
+            content: 'There was an error processing your mega details. Please try again later.',
             ephemeral: true,
           });
         }
@@ -106,11 +210,15 @@ module.exports = {
         }
   
         const shinyValue = interaction.values[0];
+        
+        // Prepare the final registration entry with all collected data
         const registrationEntry = {
           userId: interaction.user.id,
           ign: pending.ign,
           pokemon: pending.pokemon,
           pokemonLevel: pending.pokemonLevel,
+          mega: pending.mega || 'No',
+          megaDetails: pending.megaDetails || '',
           shiny: shinyValue,
           holdingItem: pending.holdingItem,
         };

@@ -1,26 +1,16 @@
 {
   "lastCommands": {
     "1095036363348377623": {
-      "timestamp": 1742338363109,
-      "command": "online"
+      "timestamp": 1743959003568,
+      "command": "offline"
     }
   },
   "lastCodeEmbeds": {},
-  "registeredUsers": {
-    "99954108894552064": true
-  },
+  "registeredUsers": {},
   "queue": {
     "registrations": []
   },
   "activeSession": [],
-  "waitingList": [
-    {
-      "userId": "99954108894552064",
-      "ign": "Deez Nutz",
-      "pokemon": "Joe Mama",
-      "pokemonLevel": "Lick my Nutz",
-      "shiny": "No",
-      "holdingItem": "Kai Suck my ass"
-    }
-  ]
+  "waitingList": [],
+  "offlineEmbedMessageId": "1358487265139228723"
 }

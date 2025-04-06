@@ -65,7 +65,7 @@ module.exports = {
           color: '#0099ff',
           title: `${message.author.username}'s Union Circle Code`,
           description: `Your code is: \`${code}\``,
-          image: config.images.custom, // Must be a valid URL string (e.g., "https://example.com/image.png")
+          image: config.imageUrls.custom, // Use URL here
           extraFields: [{ name: 'Note', value: 'This code is for the current session only.' }],
         });
         

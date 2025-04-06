@@ -70,7 +70,7 @@ module.exports = {
           '#00ff00',
           'Union Circle Online',
           `${message.author} has opened the Union Circle. All queues, waiting list, and registrations have been reset.`,
-          config.images.unlock,
+          config.imageUrls.unlock, // Use URL here
           [{ name: 'Status', value: 'Channel Unlocked and Data Reset' }]
         );
         console.log('[Online] Online embed sent.');

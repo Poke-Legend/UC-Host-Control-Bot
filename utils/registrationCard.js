@@ -81,16 +81,16 @@ async function generateRegistrationCard(user, registration) {
         
         // Draw the background image to cover the entire canvas
         ctx.drawImage(backgroundImage, drawX, drawY, drawWidth, drawHeight);
+        
+        // Add a semi-transparent overlay for better text visibility
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+        ctx.fillRect(0, 0, 800, 450);
       }
     } catch (err) {
       console.error('Error loading background image:', err);
-      // Fallback to gradient (already set)
+      // Fallback to gradient background already set
     }
   }
-  
-  // Add a semi-transparent overlay for better text visibility
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-  ctx.fillRect(0, 0, 800, 450);
   
   // Add Pokemon Legends header
   ctx.fillStyle = '#e94560';
@@ -157,7 +157,7 @@ async function generateRegistrationCard(user, registration) {
   
   // Draw a semi-transparent panel for registration details
   ctx.fillStyle = 'rgba(15, 52, 96, 0.7)';
-  drawRoundedRect(ctx, 230, 140, 530, 180, 10);
+  drawRoundedRect(ctx, 230, 140, 530, 220, 10); // Made the panel taller to fit Mega info
   ctx.fill();
   
   // Add registration details with shadow
@@ -169,11 +169,35 @@ async function generateRegistrationCard(user, registration) {
   ctx.fillStyle = '#ffffff';
   ctx.font = '22px Arial';
   ctx.fillText(`In-Game Name: ${registration.ign}`, 250, 170);
-  ctx.fillText(`Pokémon: ${registration.pokemon}${registration.pokemonLevel ? ` (Lvl ${registration.pokemonLevel})` : ''}`, 250, 210);
-  ctx.fillText(`Shiny: ${registration.shiny}`, 250, 250);
   
+  // Adjust spacing to accommodate Mega Evolution info
+  let yPos = 170;
+  const lineHeight = 40;
+  
+  // In-Game Name
+  ctx.fillText(`In-Game Name: ${registration.ign}`, 250, yPos);
+  yPos += lineHeight;
+  
+  // Pokémon with Level
+  ctx.fillText(`Pokémon: ${registration.pokemon}${registration.pokemonLevel ? ` (Lvl ${registration.pokemonLevel})` : ''}`, 250, yPos);
+  yPos += lineHeight;
+  
+  // Mega Evolution Info (only show details if Mega is Yes)
+  if (registration.mega === 'Yes' && registration.megaDetails) {
+    ctx.fillText(`Mega Evolution: ${registration.megaDetails}`, 250, yPos);
+  } else {
+    ctx.fillText(`Mega Evolution: ${registration.mega}`, 250, yPos);
+  }
+  yPos += lineHeight;
+  
+  // Shiny Status
+  ctx.fillText(`Shiny: ${registration.shiny}`, 250, yPos);
+  yPos += lineHeight;
+  
+  // Holding Item (if provided)
   if (registration.holdingItem) {
-    ctx.fillText(`Holding: ${registration.holdingItem}`, 250, 290);
+    ctx.fillText(`Holding: ${registration.holdingItem}`, 250, yPos);
+    yPos += lineHeight;
   }
   
   // Status message
@@ -181,9 +205,9 @@ async function generateRegistrationCard(user, registration) {
   ctx.shadowBlur = 3;
   ctx.textAlign = 'center';
   ctx.font = '26px Arial';
-  ctx.fillText('You have been added to the waiting list!', 400, 350);
+  ctx.fillText('You have been added to the waiting list!', 400, 380);
   ctx.font = '20px Arial';
-  ctx.fillText('The host will notify you when it\'s your turn', 400, 385);
+  ctx.fillText('The host will notify you when it\'s your turn', 400, 415);
   
   // Add footer
   ctx.shadowColor = 'transparent';

@@ -49,7 +49,15 @@ module.exports = {
     saveConfig(channelName, channelConfig);
     
     const details = group.map((reg, index) => {
-      return `**Player ${index + 1}:**\nDiscord: <@${reg.userId}>\nIGN: \`${reg.ign}\`\nPokémon: \`${reg.pokemon}\`\nLevel: \`${reg.pokemonLevel}\`\nShiny: \`${reg.shiny}\`\nItem: \`${reg.holdingItem}\``;
+      // Build the mega information string
+      let megaInfo = '';
+      if (reg.mega === 'Yes' && reg.megaDetails) {
+        megaInfo = `\nMega Evolution: \`${reg.megaDetails}\``;
+      } else if (reg.mega) {
+        megaInfo = `\nMega Evolution: \`${reg.mega}\``;
+      }
+      
+      return `**Player ${index + 1}:**\nDiscord: <@${reg.userId}>\nIGN: \`${reg.ign}\`\nPokémon: \`${reg.pokemon}\`\nLevel: \`${reg.pokemonLevel || 'N/A'}\`${megaInfo}\nShiny: \`${reg.shiny || 'No'}\`\nItem: \`${reg.holdingItem || 'None'}\``;
     }).join('\n\n');
     
     // Create an embed using our helper function (which converts hex to int)

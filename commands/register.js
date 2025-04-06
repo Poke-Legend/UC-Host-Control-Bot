@@ -1,3 +1,4 @@
+// commands/register.js
 const {
   SlashCommandBuilder,
   ModalBuilder,
@@ -58,7 +59,7 @@ module.exports = {
         });
       }
 
-      // Build the registration modal
+      // Build the first part of the registration modal (basic info)
       const modal = new ModalBuilder()
         .setCustomId('registrationModal')
         .setTitle('Union Circle Registration');
@@ -87,7 +88,7 @@ module.exports = {
         .setStyle(TextInputStyle.Short)
         .setRequired(false);
 
-      // Each input must be in its own ActionRow.
+      // Each input must be in its own ActionRow
       modal.addComponents(
         new ActionRowBuilder().addComponents(ignInput),
         new ActionRowBuilder().addComponents(pokemonInput),

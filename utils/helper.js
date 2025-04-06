@@ -4,6 +4,18 @@ const path = require('path');
 const { EmbedBuilder } = require('discord.js');
 const config = require('./config');
 
+// Helper function to convert hex color to integer
+function hexToInt(hexColor) {
+  // Remove # if present
+  if (hexColor && typeof hexColor === 'string') {
+    const hex = hexColor.replace('#', '');
+    return parseInt(hex, 16);
+  }
+  
+  // If already a number or invalid, return as is
+  return hexColor;
+}
+
 const createEmbed = ({ color, title, description, image = null, extraFields = [] }) => {
   const systemYear = new Date().getFullYear();
   const systemTime = new Date().toLocaleTimeString();
@@ -11,29 +23,58 @@ const createEmbed = ({ color, title, description, image = null, extraFields = []
     ? config.footer.text.replace(/{year}/g, systemYear)
     : `© ${systemYear} Pokémon Legends - ${systemTime}`;
 
-  // Convert hex string color to integer if needed.
-  let embedColor;
-  if (typeof color === 'string') {
-    embedColor = parseInt(color.replace('#', ''), 16);
-  } else {
-    embedColor = color;
-  }
+  // Ensure color is converted to integer
+  const embedColor = hexToInt(color);
 
   const embed = new EmbedBuilder()
     .setColor(embedColor)
     .setTitle(title)
     .setDescription(description)
-    .setFooter({ text: footerText, iconURL: config.footer.iconUrl })
+    .setFooter({ 
+      text: footerText, 
+      iconURL: config.footer.iconUrl // Use the URL, not local path
+    })
     .setTimestamp();
 
-  // Use the image URL directly (Discord.js v14 expects a string)
-  if (image) embed.setImage(image);
+  // Check if image is a URL or local path
+  // Only use URLs for Discord embeds
+  if (image && image.startsWith('http')) {
+    embed.setImage(image);
+  }
+  
   if (extraFields.length > 0) embed.addFields(extraFields);
   return embed;
 };
 
 const sendEmbed = async (channel, color, title, description, image = null, extraFields = []) => {
-  const embed = createEmbed({ color, title, description, image, extraFields });
+  // Ensure color is converted to integer
+  const embedColor = hexToInt(color);
+  
+  // If image is a local path, try to find corresponding URL in imageUrls
+  if (image && !image.startsWith('http')) {
+    // Try to find a matching URL by comparing path segments
+    const imageName = path.basename(image);
+    const matchingUrlKey = Object.keys(config.imageUrls).find(key => {
+      const urlPath = new URL(config.imageUrls[key]).pathname;
+      return urlPath.includes(imageName);
+    });
+    
+    if (matchingUrlKey) {
+      image = config.imageUrls[matchingUrlKey];
+    } else {
+      // No matching URL found, don't use the image
+      image = null;
+    }
+  }
+  
+  const embed = createEmbed({ 
+    color: embedColor, 
+    title, 
+    description, 
+    image, 
+    extraFields 
+  });
+  
   return await channel.send({ embeds: [embed] });
 };
 
@@ -109,7 +150,7 @@ const loadConfig = (channelName) => {
   return channelData;
 };
 
-// New helper function to check if a user is already registered in any capacity
+// Helper function to check if a user is already registered in any capacity
 const isUserRegistered = (channelConfig, userId) => {
   if (!channelConfig || !userId) return false;
   
@@ -151,4 +192,5 @@ module.exports = {
   saveConfig,
   loadConfig,
   isUserRegistered,
+  hexToInt,
 };

@@ -37,6 +37,7 @@ module.exports = {
           value: 'For issues or feature requests, please contact server administrators.',
         }
       ],
+      image: config.imageUrls.custom, // Use URL here to ensure it works when channel is locked
     });
     
     await message.channel.send({ embeds: [embed] });

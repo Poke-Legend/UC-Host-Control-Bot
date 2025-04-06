@@ -177,7 +177,7 @@ module.exports = {
           '#ff0000',
           'Union Circle Offline',
           `${message.author} has closed the Union Circle. All messages have been cleared and data reset.`,
-          config.images.lock, // Ensure this is a valid URL string.
+          config.imageUrls.lock, // Use URL here
           [{ name: 'Status', value: 'Channel Locked and Data Reset' }]
         );
         console.log('[Offline] Offline embed sent successfully.');

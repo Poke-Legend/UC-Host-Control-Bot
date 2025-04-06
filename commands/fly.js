@@ -21,7 +21,7 @@ module.exports = {
       '#0099ff',
       'Secret Lair Airline',
       `Please board at the gate and head to Secret Lair to meet with ${message.author}`,
-      config.images.fly
+      config.imageUrls.fly  // Use the URL here
     );
   },
 };

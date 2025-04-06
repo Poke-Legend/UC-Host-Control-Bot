@@ -31,8 +31,8 @@ module.exports = {
     }
     
     try {
-      // Get the image URL from config (should be a GIF)
-      const imageUrl = config.images.stay;
+      // Get the image URL from config
+      const imageUrl = config.imageUrls.stay;  // Use URL here
       
       if (!imageUrl) {
         return message.channel.send({
@@ -48,7 +48,7 @@ module.exports = {
         .setImage(imageUrl) // This will display the animated GIF
         .setFooter({ 
           text: `© ${new Date().getFullYear()} Pokémon Legends`, 
-          iconURL: config.footer.iconUrl 
+          iconURL: config.footer.iconUrl  // Use URL here
         })
         .setTimestamp();
       

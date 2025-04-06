@@ -21,7 +21,7 @@ module.exports = {
       '#0099ff',
       'Alfornada Airline',
       `Please board at the gate and head to Alfornada to meet with ${message.author}`,
-      config.images.fly2
+      config.imageUrls.fly2  // Use the URL here
     );
   },
 };

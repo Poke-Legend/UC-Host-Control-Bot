@@ -1,11 +1,12 @@
 {
   "99954108894552064": {
-    "xp": 180,
-    "level": 3,
+    "xp": 10,
+    "level": 4,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png",
-      "https://sysbots.net/images/Flareon_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png",
+      "./assets/badges/flareon.png",
+      "/home/container/PokeHosting/assets/badges/jolteon.png"
     ],
     "modified": false
   },
@@ -13,19 +14,19 @@
     "xp": 20,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
   "782164994891448321": {
-    "xp": 100,
+    "xp": 285,
     "level": 5,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png",
-      "https://sysbots.net/images/Flareon_72px.png",
-      "https://sysbots.net/images/Jolteon_72px.png",
-      "https://sysbots.net/images/Vaporeon_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png",
+      "./assets/badges/flareon.png",
+      "./assets/badges/jolteon.png",
+      "./assets/badges/vaporeon.png"
     ],
     "modified": false
   },
@@ -33,8 +34,8 @@
     "xp": 20,
     "level": 2,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png"
     ],
     "modified": false
   },
@@ -42,28 +43,29 @@
     "xp": 130,
     "level": 3,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png",
-      "https://sysbots.net/images/Flareon_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png",
+      "./assets/badges/flareon.png"
     ],
     "modified": false
   },
   "693172805621121085": {
-    "xp": 95,
-    "level": 2,
+    "xp": 80,
+    "level": 3,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png",
+      "/home/container/PokeHosting/assets/badges/flareon.png"
     ],
     "modified": false
   },
   "988128942978367488": {
-    "xp": 45,
+    "xp": 130,
     "level": 3,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png",
-      "https://sysbots.net/images/Flareon_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png",
+      "./assets/badges/flareon.png"
     ],
     "modified": false
   },
@@ -71,7 +73,7 @@
     "xp": 80,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -79,7 +81,7 @@
     "xp": 55,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -87,17 +89,18 @@
     "xp": 85,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
   "1006266718127141014": {
-    "xp": 285,
-    "level": 3,
+    "xp": 35,
+    "level": 4,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png",
-      "https://sysbots.net/images/Flareon_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png",
+      "./assets/badges/flareon.png",
+      "/home/container/PokeHosting/assets/badges/jolteon.png"
     ],
     "modified": false
   },
@@ -105,8 +108,8 @@
     "xp": 70,
     "level": 2,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png"
     ],
     "modified": false
   },
@@ -114,8 +117,8 @@
     "xp": 5,
     "level": 2,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png"
     ],
     "modified": false
   },
@@ -123,20 +126,20 @@
     "xp": 0,
     "level": 3,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png",
-      "https://sysbots.net/images/Flareon_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png",
+      "./assets/badges/flareon.png"
     ],
     "modified": false
   },
   "596304605709860904": {
-    "xp": 70,
+    "xp": 320,
     "level": 4,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png",
-      "https://sysbots.net/images/Eevee_72px.png",
-      "https://sysbots.net/images/Flareon_72px.png",
-      "https://sysbots.net/images/Jolteon_72px.png"
+      "./assets/badges/pokeball.png",
+      "./assets/badges/eevee.png",
+      "./assets/badges/flareon.png",
+      "./assets/badges/jolteon.png"
     ],
     "modified": false
   },
@@ -144,7 +147,7 @@
     "xp": 15,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -152,7 +155,7 @@
     "xp": 15,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -160,7 +163,7 @@
     "xp": 5,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -168,7 +171,7 @@
     "xp": 20,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -176,15 +179,15 @@
     "xp": 20,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
   "1020776456734904411": {
-    "xp": 5,
+    "xp": 10,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -192,7 +195,7 @@
     "xp": 5,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -200,7 +203,7 @@
     "xp": 35,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -208,7 +211,7 @@
     "xp": 35,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -216,7 +219,7 @@
     "xp": 10,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -224,7 +227,7 @@
     "xp": 25,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
@@ -232,15 +235,39 @@
     "xp": 15,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
     ],
     "modified": false
   },
   "989587512844492850": {
-    "xp": 30,
+    "xp": 35,
     "level": 1,
     "badges": [
-      "https://sysbots.net/images/Smaller%20Pokeball_72px.png"
+      "./assets/badges/pokeball.png"
+    ],
+    "modified": false
+  },
+  "1051680882253123616": {
+    "xp": 5,
+    "level": 1,
+    "badges": [
+      "/home/container/PokeHosting/assets/badges/pokeball.png"
+    ],
+    "modified": false
+  },
+  "908754644061282344": {
+    "xp": 5,
+    "level": 1,
+    "badges": [
+      "/home/container/PokeHosting/assets/badges/pokeball.png"
+    ],
+    "modified": false
+  },
+  "942117133519847484": {
+    "xp": 15,
+    "level": 1,
+    "badges": [
+      "/home/container/PokeHosting/assets/badges/pokeball.png"
     ],
     "modified": false
   }

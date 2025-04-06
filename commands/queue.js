@@ -1,4 +1,5 @@
-const { createEmbed } = require('../utils/helper');
+// commands/queue.js
+const { createEmbed, hexToInt } = require('../utils/helper');
 
 module.exports = {
   name: 'queue',

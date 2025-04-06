@@ -1,6 +1,6 @@
 // commands/waitlist.js
-const { createEmbed, sendEmbed } = require('../utils/helper');
-const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
+const { createEmbed, sendEmbed, hexToInt } = require('../utils/helper');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = {
   name: 'waitlist',
@@ -39,12 +39,12 @@ module.exports = {
       new ButtonBuilder()
         .setCustomId('prevWait')
         .setLabel('⬅️')
-        .setStyle('Primary')
+        .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage === 0),
       new ButtonBuilder()
         .setCustomId('nextWait')
         .setLabel('➡️')
-        .setStyle('Primary')
+        .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage >= totalPages - 1)
     );
 
@@ -70,12 +70,12 @@ module.exports = {
               new ButtonBuilder()
                 .setCustomId('prevWait')
                 .setLabel('⬅️')
-                .setStyle('Primary')
+                .setStyle(ButtonStyle.Primary)
                 .setDisabled(currentPage === 0),
               new ButtonBuilder()
                 .setCustomId('nextWait')
                 .setLabel('➡️')
-                .setStyle('Primary')
+                .setStyle(ButtonStyle.Primary)
                 .setDisabled(currentPage >= totalPages - 1)
             ),
           ],

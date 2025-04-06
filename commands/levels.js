@@ -2,7 +2,9 @@
 const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const { getUserLevelData } = require('../levels/levelSystem');
 const { createCanvas, loadImage } = require('canvas');
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+const config = require('../utils/config');
 
 // Helper function to draw a rounded rectangle
 function drawRoundedRect(ctx, x, y, width, height, radius) {
@@ -22,16 +24,35 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
-// Simple function to load an image directly
-async function loadImageDirectly(url) {
-  if (!url) return null;
-  
+// Improved function to load an image with fallback
+async function loadImageWithFallback(localPath, fallbackUrl) {
   try {
-    return await loadImage(url);
+    // Get absolute path and check if file exists
+    const absolutePath = path.resolve(localPath);
+    
+    if (fs.existsSync(absolutePath)) {
+      try {
+        const image = await loadImage(absolutePath);
+        return image;
+      } catch (err) {
+        // Fall through to URL fallback
+      }
+    }
+    
+    // Try the URL fallback if available
+    if (fallbackUrl) {
+      try {
+        const image = await loadImage(fallbackUrl);
+        return image;
+      } catch (urlErr) {
+        // Both attempts failed, return null
+      }
+    }
   } catch (err) {
-    console.error('Error loading image:', err);
-    return null;
+    // Error in function, return null
   }
+  
+  return null;
 }
 
 // Function to create a placeholder badge
@@ -58,8 +79,8 @@ function createBadgePlaceholder(level, size = 50) {
   return canvas;
 }
 
-// Function to generate level card as canvas
-const generateLevelCard = async (user, data) => {
+// Function to generate level card as canvas with improved image handling
+async function generateLevelCard(user, data) {
   // Create canvas with 16:9 aspect ratio
   const canvas = createCanvas(800, 450);
   const ctx = canvas.getContext('2d');
@@ -71,47 +92,48 @@ const generateLevelCard = async (user, data) => {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 800, 450);
   
-  // Try to load background image from env
-  const bgUrl = process.env.LEVEL_BACKGROUND_URL;
-  if (bgUrl) {
-    try {
-      const backgroundImage = await loadImageDirectly(bgUrl);
-      
-      if (backgroundImage) {
-        // Calculate dimensions to cover the entire canvas while maintaining aspect ratio
-        const bgRatio = backgroundImage.width / backgroundImage.height;
-        const canvasRatio = canvas.width / canvas.height;
-        
-        let drawWidth, drawHeight, drawX, drawY;
-        
-        if (bgRatio > canvasRatio) {
-          // Image is wider than the canvas (relative to height)
-          drawHeight = canvas.height;
-          drawWidth = drawHeight * bgRatio;
-          drawX = (canvas.width - drawWidth) / 2;
-          drawY = 0;
-        } else {
-          // Image is taller than the canvas (relative to width)
-          drawWidth = canvas.width;
-          drawHeight = drawWidth / bgRatio;
-          drawX = 0;
-          drawY = (canvas.height - drawHeight) / 2;
-        }
-        
-        // Clear the canvas before drawing the background image
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw the background image to cover the entire canvas
-        ctx.drawImage(backgroundImage, drawX, drawY, drawWidth, drawHeight);
-      }
-    } catch (err) {
-      // Fallback to gradient (already set)
-    }
-  }
+  // Get the background image path
+  const bgLocalPath = config.images.levelBackground;
+  const bgUrlFallback = config.imageUrls.levelBackground;
   
-  // Add a semi-transparent overlay for better text visibility
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-  ctx.fillRect(0, 0, 800, 450);
+  try {
+    // Try loading with our fallback function
+    const backgroundImage = await loadImageWithFallback(bgLocalPath, bgUrlFallback);
+    
+    if (backgroundImage) {
+      // Calculate dimensions to cover the entire canvas while maintaining aspect ratio
+      const bgRatio = backgroundImage.width / backgroundImage.height;
+      const canvasRatio = canvas.width / canvas.height;
+      
+      let drawWidth, drawHeight, drawX, drawY;
+      
+      if (bgRatio > canvasRatio) {
+        // Image is wider than the canvas (relative to height)
+        drawHeight = canvas.height;
+        drawWidth = drawHeight * bgRatio;
+        drawX = (canvas.width - drawWidth) / 2;
+        drawY = 0;
+      } else {
+        // Image is taller than the canvas (relative to width)
+        drawWidth = canvas.width;
+        drawHeight = drawWidth / bgRatio;
+        drawX = 0;
+        drawY = (canvas.height - drawHeight) / 2;
+      }
+      
+      // Clear the canvas before drawing the background image
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw the background image to cover the entire canvas
+      ctx.drawImage(backgroundImage, drawX, drawY, drawWidth, drawHeight);
+      
+      // Add a semi-transparent overlay for better text visibility
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(0, 0, 800, 450);
+    }
+  } catch (err) {
+    // Continue with gradient background already set
+  }
   
   // Add Pokemon Legends logo/banner at the top
   ctx.fillStyle = '#e94560';
@@ -252,8 +274,23 @@ const generateLevelCard = async (user, data) => {
       ctx.fill();
       
       try {
-        // Try to load badge image directly without caching
-        const badge = await loadImageDirectly(data.badges[i]);
+        // Try to load badge image directly first
+        let badge = null;
+        const badgePath = data.badges[i];
+        
+        // Extract badge name to create a fallback URL
+        let fileName = '';
+        try {
+          fileName = path.basename(badgePath).replace('.png', '');
+        } catch (e) {
+          fileName = badgePath.split('/').pop().replace('.png', '');
+        }
+        
+        // Try loading the badge with fallback
+        badge = await loadImageWithFallback(
+          badgePath,
+          `https://sysbots.net/images/${fileName}_72px.png`
+        );
         
         if (badge) {
           // Calculate how to perfectly center and scale the badge
@@ -334,7 +371,7 @@ const generateLevelCard = async (user, data) => {
   ctx.fillText(`© ${year} Pokémon Legends`, 400, 445);
   
   return canvas.toBuffer();
-};
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -373,7 +410,6 @@ module.exports = {
       });
       
     } catch (error) {
-      console.error('Error generating level card:', error);
       // Send error message
       await interaction.editReply({ 
         content: `Sorry, I couldn't generate a level card for ${targetUser.username}. Please try again later.`
