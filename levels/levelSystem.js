@@ -106,6 +106,24 @@ function createBadgePlaceholder(level, size = 50) {
   return canvas;
 }
 
+// Helper function to draw a rounded rectangle
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  if (width < 2 * radius) radius = width / 2;
+  if (height < 2 * radius) radius = height / 2;
+  
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.arcTo(x + width, y, x + width, y + radius, radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+  ctx.lineTo(x + radius, y + height);
+  ctx.arcTo(x, y + height, x, y + height - radius, radius);
+  ctx.lineTo(x, y + radius);
+  ctx.arcTo(x, y, x + radius, y, radius);
+  ctx.closePath();
+}
+
 // Function to add XP for a given user.
 const addXp = (userId, xp, override = false) => {
   if (!xpData[userId]) {
@@ -186,25 +204,7 @@ const removeXp = (userId, xp, override = false) => {
   return xpData[userId];
 };
 
-// Helper function to draw a rounded rectangle
-function drawRoundedRect(ctx, x, y, width, height, radius) {
-  if (width < 2 * radius) radius = width / 2;
-  if (height < 2 * radius) radius = height / 2;
-  
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.arcTo(x + width, y, x + width, y + radius, radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
-  ctx.lineTo(x + radius, y + height);
-  ctx.arcTo(x, y + height, x, y + height - radius, radius);
-  ctx.lineTo(x, y + radius);
-  ctx.arcTo(x, y, x + radius, y, radius);
-  ctx.closePath();
-}
-
-// Function to create a level up card with badge centered correctly
+// Function to create a level up card with badge centered correctly and header icons
 async function createLevelUpCard(user, level, currentXp, threshold, badgePath, badgeName) {
   const canvas = createCanvas(800, 450);
   const ctx = canvas.getContext('2d');
@@ -270,11 +270,43 @@ async function createLevelUpCard(user, level, currentXp, threshold, badgePath, b
   ctx.fillStyle = '#FFD700'; // Gold color for achievements
   ctx.fillRect(0, 0, 800, 60);
   
-  // Add title
+  // Try to load the pokeball image for header and footer
+  const pokeballPath = path.join(__dirname, '..', 'assets', 'badges', 'pokeball.png');
+  console.log(`Attempting to load pokeball from: ${pokeballPath}`);
+  
+  try {
+    // Load the pokeball image
+    const pokeball = await loadImageWithFallback(
+      pokeballPath,
+      // Use URL from badges config or a fallback
+      `https://sysbots.net/images/pokeball_72px.png`
+    );
+    
+    if (pokeball) {
+      // Calculate size for the icons (keep aspect ratio)
+      const iconHeight = 50; // Fixed height for the icons
+      const iconWidth = (pokeball.width / pokeball.height) * iconHeight;
+      
+      // Draw the pokeball on the left side of the header
+      ctx.drawImage(pokeball, 10, 5, iconWidth, iconHeight);
+      
+      // Draw the pokeball on the right side of the header
+      ctx.drawImage(pokeball, 800 - iconWidth - 10, 5, iconWidth, iconHeight);
+      
+      console.log('Successfully added pokeball icons to header');
+    } else {
+      console.log('Pokeball icon not loaded, continuing without it');
+    }
+  } catch (err) {
+    console.error('Error loading pokeball icon:', err);
+    // Continue without the pokeball icon
+  }
+  
+  // Add title - NO EMOJI CHARACTERS to avoid the 01F3C5 issue
   ctx.fillStyle = '#333333';
   ctx.font = '32px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('🏅 UC Trainer Level Up! 🏅', 400, 40);
+  ctx.fillText('UC Trainer Level Up!', 400, 40);
   
   // Add avatar if available
   try {
@@ -422,6 +454,29 @@ async function createLevelUpCard(user, level, currentXp, threshold, badgePath, b
   ctx.fillStyle = '#FFD700';
   ctx.fillRect(0, 430, 800, 20);
   
+  // Add pokeballs to footer too if we have them loaded
+  try {
+    const pokeballPath = path.join(__dirname, '..', 'assets', 'badges', 'pokeball.png');
+    const pokeball = await loadImageWithFallback(
+      pokeballPath,
+      `https://sysbots.net/images/pokeball_72px.png`
+    );
+    
+    if (pokeball) {
+      // Calculate size for the icons (smaller for footer)
+      const iconHeight = 16; // Fixed height for the footer icons
+      const iconWidth = (pokeball.width / pokeball.height) * iconHeight;
+      
+      // Draw the pokeball on the left side of the footer
+      ctx.drawImage(pokeball, 10, 432, iconWidth, iconHeight);
+      
+      // Draw the pokeball on the right side of the footer
+      ctx.drawImage(pokeball, 800 - iconWidth - 10, 432, iconWidth, iconHeight);
+    }
+  } catch (err) {
+    console.error('Error adding pokeballs to footer:', err);
+  }
+  
   ctx.shadowColor = 'black';
   ctx.shadowBlur = 2;
   ctx.shadowOffsetX = 1;
@@ -501,10 +556,42 @@ async function generateLevelCard(user, data) {
   ctx.fillStyle = '#e94560';
   ctx.fillRect(0, 0, 800, 60);
   
+  // Try to load the pokeball image for header and footer
+  const pokeballPath = path.join(__dirname, '..', 'assets', 'badges', 'pokeball.png');
+  console.log(`Attempting to load pokeball from: ${pokeballPath}`);
+  
+  try {
+    // Load the pokeball image
+    const pokeball = await loadImageWithFallback(
+      pokeballPath,
+      // Use URL from badges config or a fallback
+      `https://sysbots.net/images/pokeball_72px.png`
+    );
+    
+    if (pokeball) {
+      // Calculate size for the icons (keep aspect ratio)
+      const iconHeight = 50; // Fixed height for the icons
+      const iconWidth = (pokeball.width / pokeball.height) * iconHeight;
+      
+      // Draw the pokeball on the left side of the header
+      ctx.drawImage(pokeball, 10, 5, iconWidth, iconHeight);
+      
+      // Draw the pokeball on the right side of the header
+      ctx.drawImage(pokeball, 800 - iconWidth - 10, 5, iconWidth, iconHeight);
+      
+      console.log('Successfully added pokeball icons to header');
+    } else {
+      console.log('Pokeball icon not loaded, continuing without it');
+    }
+  } catch (err) {
+    console.error('Error loading pokeball icon:', err);
+    // Continue without the pokeball icon
+  }
+  
   ctx.fillStyle = '#ffffff';
   ctx.font = '28px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Pokémon Legends Union Circle', 400, 40);
+  ctx.fillText('Pokemon Legends Union Circle', 400, 40);
   
   // Add avatar placeholder
   ctx.beginPath();
@@ -677,6 +764,7 @@ async function generateLevelCard(user, data) {
           
           // Draw badge centered in the circle
           ctx.drawImage(badge, drawX, drawY, drawWidth, drawHeight);
+
           ctx.restore();
         } else {
           throw new Error('Badge failed to load');
@@ -707,6 +795,29 @@ async function generateLevelCard(user, data) {
   // Add footer
   ctx.fillStyle = '#e94560';
   ctx.fillRect(0, 430, 800, 20);
+  
+  // Add pokeballs to footer too if we have them loaded
+  try {
+    const pokeballPath = path.join(__dirname, '..', 'assets', 'badges', 'pokeball.png');
+    const pokeball = await loadImageWithFallback(
+      pokeballPath,
+      `https://sysbots.net/images/pokeball_72px.png`
+    );
+    
+    if (pokeball) {
+      // Calculate size for the icons (smaller for footer)
+      const iconHeight = 16; // Fixed height for the footer icons
+      const iconWidth = (pokeball.width / pokeball.height) * iconHeight;
+      
+      // Draw the pokeball on the left side of the footer
+      ctx.drawImage(pokeball, 10, 432, iconWidth, iconHeight);
+      
+      // Draw the pokeball on the right side of the footer
+      ctx.drawImage(pokeball, 800 - iconWidth - 10, 432, iconWidth, iconHeight);
+    }
+  } catch (err) {
+    console.error('Error adding pokeballs to footer:', err);
+  }
   
   // Footer text with shadow
   ctx.shadowColor = 'black';
@@ -802,3 +913,4 @@ module.exports = {
   removeXp,
   generateLevelCard
 };
+          

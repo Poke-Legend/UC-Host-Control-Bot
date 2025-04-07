@@ -23,7 +23,7 @@ function getLocalImagePath(localPath, imageName) {
 
 module.exports = {
   prefix: '$',
-  version: process.env.BOT_VERSION || '1.0.9',
+  version: process.env.BOT_VERSION || '1.1.0',
   allowedRoleIds: [
     process.env.ALLOWED_ROLE_ID,
     process.env.ALLOWED_ROLE_ID2,
