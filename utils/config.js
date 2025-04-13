@@ -1,40 +1,35 @@
 // utils/config.js
 const path = require('path');
-const fs = require('fs');
 require('dotenv').config();
 
-// Base assets directories (use env variables if provided, otherwise use defaults)
-const assetsDir = path.join(__dirname, '..', 'assets');
-const uiDir = process.env.UI_IMAGE_PATH || path.join(assetsDir, 'ui');
-const badgesDir = process.env.BADGES_IMAGE_PATH || path.join(assetsDir, 'badges');
-
-// Helper function to get image path and log warning if missing
-function getLocalImagePath(localPath, imageName) {
-  if (fs.existsSync(localPath)) {
-    return localPath;
-  }
-  
-  // Log warning for missing image
-  console.warn(`Warning: Local image file not found: ${localPath}`);
-  
-  // Return the path anyway - the app should handle missing files gracefully
-  return localPath;
-}
-
-module.exports = {
+// Base configuration values
+const config = {
+  // Core bot settings
   prefix: '$',
-  version: process.env.BOT_VERSION || '1.1.0',
+  version: process.env.BOT_VERSION || '1.1.1',
+  
+  // Role IDs
   allowedRoleIds: [
     process.env.ALLOWED_ROLE_ID,
     process.env.ALLOWED_ROLE_ID2,
   ].filter(Boolean), // Filter out undefined values
-  
-  lockEmoji: '❌',
-  unlockEmoji: '✅',
   managedRoleId: process.env.MANAGED_ROLE_ID,
   pingRoleId: process.env.PING_ROLE_ID,
-  ucCategoryId: process.env.UC_CATEGORY_ID,
   botRoleId: process.env.BOT_ROLE_ID,
+  
+  // Priority system roles
+  priorityRoleIds: {
+    vip: process.env.PRIORITY_ROLE_VIP || '',
+    supporter: process.env.PRIORITY_ROLE_SUPPORTER || '',
+    regular: process.env.PRIORITY_ROLE_REGULAR || '',
+  },
+  
+  // Category IDs
+  ucCategoryId: process.env.UC_CATEGORY_ID,
+  
+  // UI settings
+  lockEmoji: '❌',
+  unlockEmoji: '✅',
   
   // Image URLs for Discord embeds (must be URLs, not file paths)
   imageUrls: {
@@ -50,32 +45,18 @@ module.exports = {
     levelBackground: 'https://sysbots.net/images/pokemon-legends.png'
   },
   
-  // Local image paths for Canvas operations
-  images: {
-    lock: getLocalImagePath(path.join(uiDir, 'lock.png'), 'lock'),
-    unlock: getLocalImagePath(path.join(uiDir, 'unlock.png'), 'unlock'),
-    custom: getLocalImagePath(path.join(uiDir, 'custom.jpg'), 'custom'),
-    fly: getLocalImagePath(path.join(uiDir, 'fly.gif'), 'fly'),
-    fly2: getLocalImagePath(path.join(uiDir, 'fly2.gif'), 'fly2'),
-    flyplatos: getLocalImagePath(path.join(uiDir, 'flyplatos.png'), 'flyplatos'),
-    stay: getLocalImagePath(path.join(uiDir, 'stay.gif'), 'stay'),
-    ready: getLocalImagePath(path.join(uiDir, 'ready.png'), 'ready'),
-    slut: getLocalImagePath(path.join(uiDir, 'slut.png'), 'slut'),
-    levelBackground: getLocalImagePath(path.join(uiDir, 'background.png'), 'levelBackground')
-  },
-  
-  // Badge image paths with fallbacks
+  // Badge system configuration
   badges: {
-    1: getLocalImagePath(path.join(badgesDir, 'pokeball.png'), 'badge1'),
-    2: getLocalImagePath(path.join(badgesDir, 'eevee.png'), 'badge2'),
-    3: getLocalImagePath(path.join(badgesDir, 'flareon.png'), 'badge3'),
-    4: getLocalImagePath(path.join(badgesDir, 'jolteon.png'), 'badge4'),
-    5: getLocalImagePath(path.join(badgesDir, 'vaporeon.png'), 'badge5'),
-    6: getLocalImagePath(path.join(badgesDir, 'umbreon.png'), 'badge6'),
-    7: getLocalImagePath(path.join(badgesDir, 'espeon.png'), 'badge7'),
-    8: getLocalImagePath(path.join(badgesDir, 'glaceon.png'), 'badge8'),
-    9: getLocalImagePath(path.join(badgesDir, 'leafeon.png'), 'badge9'),
-    10: getLocalImagePath(path.join(badgesDir, 'sylveon.png'), 'badge10'),
+    1: path.join(__dirname, '..', 'assets', 'badges', 'pokeball.png'),
+    2: path.join(__dirname, '..', 'assets', 'badges', 'eevee.png'),
+    3: path.join(__dirname, '..', 'assets', 'badges', 'flareon.png'),
+    4: path.join(__dirname, '..', 'assets', 'badges', 'jolteon.png'),
+    5: path.join(__dirname, '..', 'assets', 'badges', 'vaporeon.png'),
+    6: path.join(__dirname, '..', 'assets', 'badges', 'umbreon.png'),
+    7: path.join(__dirname, '..', 'assets', 'badges', 'espeon.png'),
+    8: path.join(__dirname, '..', 'assets', 'badges', 'glaceon.png'),
+    9: path.join(__dirname, '..', 'assets', 'badges', 'leafeon.png'),
+    10: path.join(__dirname, '..', 'assets', 'badges', 'sylveon.png'),
   },
   
   // Badge names for easier reference
@@ -92,13 +73,13 @@ module.exports = {
     10: "Master Badge"
   },
   
-  // Footer configuration - URL required for Discord
+  // Footer configuration
   footer: {
     text: process.env.FOOTER_TEXT || "© 2022 - {year} Pokémon Legends",
-    iconUrl: 'https://i.imgur.com/r2Tc0xZ.png', // Use URL here, not local path
+    iconUrl: 'https://i.imgur.com/r2Tc0xZ.png',
   },
   
-  // Other bot configuration
+  // System settings
   cooldownSeconds: 600,
   
   // Data directories
@@ -108,3 +89,5 @@ module.exports = {
     bans: process.env.BANS_DATA_PATH || path.join(__dirname, '..', 'Bans'),
   },
 };
+
+module.exports = config;

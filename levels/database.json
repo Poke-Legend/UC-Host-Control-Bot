@@ -1,6 +1,6 @@
 {
   "99954108894552064": {
-    "xp": 10,
+    "xp": 65,
     "level": 4,
     "badges": [
       "./assets/badges/pokeball.png",
@@ -19,7 +19,7 @@
     "modified": false
   },
   "782164994891448321": {
-    "xp": 285,
+    "xp": 300,
     "level": 5,
     "badges": [
       "./assets/badges/pokeball.png",

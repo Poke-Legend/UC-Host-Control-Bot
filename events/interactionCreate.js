@@ -1,286 +1,178 @@
 // events/interactionCreate.js
+const { 
+  handleRegisterCommand,
+  handleRegistrationModal,
+  handleMegaSelection,
+  handleMegaDetailsModal,
+  handleShinySelection
+} = require('./registerHandler');
 const { checkBan } = require('../utils/banSystem');
-const { loadConfig, pendingRegistrations, saveConfig } = require('../utils/helper');
-const { AttachmentBuilder, StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
-const { generateRegistrationCard } = require('../utils/registrationCard');
+const ErrorHandler = require('../utils/errorHandler');
+const logger = require('../utils/logger');
 
 module.exports = {
   name: 'interactionCreate',
   async execute(interaction, client) {
-    
-    // Handle slash commands (ChatInputCommand)
-    if (interaction.isChatInputCommand()) {
-      const command = client.commands.get(interaction.commandName);
-      if (!command) {
-        console.log('[InteractionCreate] No command found for:', interaction.commandName);
-        return;
-      }
-      try {
-        await command.execute(interaction, client);
-      } catch (err) {
-        console.error('[InteractionCreate] Error executing command:', err);
-        if (!interaction.replied && !interaction.deferred) {
-          await interaction.reply({
-            content: 'There was an error while executing this command!',
-            ephemeral: true,
-          });
-        }
-      }
-    }
-    // Handle modal submissions (e.g. registration modal)
-    else if (interaction.isModalSubmit() && interaction.customId === 'registrationModal') {
-      try {
-        // Check if user is banned
-        const banResult = checkBan(interaction.user.id);
-        if (banResult.banned) {
+    try {
+      // Check for banned users - reject all interactions from banned users
+      const banResult = checkBan(interaction.user.id);
+      if (banResult.banned) {
+        // Only reply if the interaction can be replied to
+        if (interaction.isRepliable() && !interaction.replied && !interaction.deferred) {
           await interaction.reply({
             content: `You are banned from Union Circle: ${banResult.reason}`,
             ephemeral: true,
           });
-          return;
         }
-  
-        // Load channel configuration
-        const channelName = interaction.channel.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-        const channelConfig = loadConfig(channelName);
-        
-        // Check if user is already in the queue or waiting list
-        const userInQueue = channelConfig.queue.registrations.some(reg => reg.userId === interaction.user.id);
-        const userInWaitlist = channelConfig.waitingList.some(reg => reg.userId === interaction.user.id);
-        const userInActiveSession = channelConfig.activeSession.some(reg => reg.userId === interaction.user.id);
-        
-        if (userInQueue || userInWaitlist || userInActiveSession) {
-          await interaction.reply({
-            content: "⚠️ You're already registered in this Union Circle. You cannot register twice in the same queue or while in an active session.",
-            ephemeral: true,
-          });
-          return;
-        }
-        
-        // Process registration input
-        const ign = interaction.fields.getTextInputValue('ignInput');
-        const pokemon = interaction.fields.getTextInputValue('pokemonInput');
-        const pokemonLevel = interaction.fields.getTextInputValue('pokemonLevelInput');
-        const holdingItem = interaction.fields.getTextInputValue('holdingItemInput');
-  
-        // Use a composite key (channelID-userID) for pending registrations
-        const pendingKey = `${interaction.channel.id}-${interaction.user.id}`;
-        pendingRegistrations[pendingKey] = { ign, pokemon, pokemonLevel, holdingItem };
-  
-        // First ask for Mega information
-        const megaSelectMenu = new StringSelectMenuBuilder()
-          .setCustomId('megaSelect')
-          .setPlaceholder('Is your Pokémon a Mega Evolution?')
-          .addOptions([
-            { label: 'Yes', description: 'It is a Mega Evolution', value: 'Yes' },
-            { label: 'No', description: 'It is not a Mega Evolution', value: 'No' },
-          ]);
-  
-        const megaRow = new ActionRowBuilder().addComponents(megaSelectMenu);
-  
+        return;
+      }
+      
+      // Handle different interaction types
+      
+      // 1. Slash Commands
+      if (interaction.isChatInputCommand()) {
+        await handleSlashCommand(interaction, client);
+      }
+      
+      // 2. Modal Submissions
+      else if (interaction.isModalSubmit()) {
+        await handleModalSubmit(interaction, client);
+      }
+      
+      // 3. Button Interactions
+      else if (interaction.isButton()) {
+        await handleButtonInteraction(interaction, client);
+      }
+      
+      // 4. Select Menu Interactions
+      else if (interaction.isStringSelectMenu()) {
+        await handleSelectMenuInteraction(interaction, client);
+      }
+    } catch (error) {
+      logger.error('Error in interactionCreate event:', error);
+      
+      // Try to respond with error if possible
+      if (interaction.isRepliable() && !interaction.replied && !interaction.deferred) {
         await interaction.reply({
-          content: 'Please select whether your Pokémon is a Mega Evolution:',
-          components: [megaRow],
+          content: 'There was an error processing your interaction. Please try again later.',
           ephemeral: true,
         });
-      } catch (err) {
-        console.error('[InteractionCreate] Error processing modal submission:', err);
-        if (!interaction.replied && !interaction.deferred) {
-          await interaction.reply({
-            content: 'There was an error processing your submission. Please try again later.',
-            ephemeral: true,
-          });
-        }
       }
     }
-    // Handle Mega selection
-    else if (interaction.isStringSelectMenu() && interaction.customId === 'megaSelect') {
-      try {
-        const pendingKey = `${interaction.channel.id}-${interaction.user.id}`;
-        const pending = pendingRegistrations[pendingKey];
-        if (!pending) {
-          return interaction.update({
-            content: 'No pending registration found.',
-            components: [],
-          });
-        }
-  
-        const megaValue = interaction.values[0];
-        pending.mega = megaValue;
-        
-        // If they selected Yes for Mega, show another input for Mega details
-        if (megaValue === 'Yes') {
-          const { TextInputBuilder, TextInputStyle, ModalBuilder } = require('discord.js');
-          
-          const megaModal = new ModalBuilder()
-            .setCustomId('megaDetailsModal')
-            .setTitle('Mega Evolution Details');
-            
-          const megaDetailsInput = new TextInputBuilder()
-            .setCustomId('megaDetailsInput')
-            .setLabel('Mega Evolution Details')
-            .setPlaceholder('e.g., Mega Charizard X, Primal Kyogre')
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true);
-            
-          megaModal.addComponents(
-            new ActionRowBuilder().addComponents(megaDetailsInput)
-          );
-          
-          await interaction.showModal(megaModal);
-        } else {
-          // If they selected No for Mega, proceed to Shiny selection
-          const shinySelectMenu = new StringSelectMenuBuilder()
-            .setCustomId('shinySelect')
-            .setPlaceholder('Select whether your Pokémon is shiny...')
-            .addOptions([
-              { label: 'Yes', description: 'It is shiny!', value: 'Yes' },
-              { label: 'No', description: 'It is not shiny.', value: 'No' },
-            ]);
-    
-          const shinyRow = new ActionRowBuilder().addComponents(shinySelectMenu);
-    
-          await interaction.update({
-            content: 'Please select whether your Pokémon is shiny:',
-            components: [shinyRow],
-          });
-        }
-      } catch (err) {
-        console.error('[InteractionCreate] Error processing mega selection:', err);
-        if (!interaction.replied && !interaction.deferred) {
-          await interaction.reply({
-            content: 'There was an error processing your selection. Please try again later.',
-            ephemeral: true,
-          });
-        }
-      }
-    }
-    // Handle Mega details modal submission
-    else if (interaction.isModalSubmit() && interaction.customId === 'megaDetailsModal') {
-      try {
-        const pendingKey = `${interaction.channel.id}-${interaction.user.id}`;
-        const pending = pendingRegistrations[pendingKey];
-        if (!pending) {
-          return interaction.reply({
-            content: 'No pending registration found.',
-            ephemeral: true,
-          });
-        }
-        
-        // Get the mega details
-        const megaDetails = interaction.fields.getTextInputValue('megaDetailsInput');
-        pending.megaDetails = megaDetails;
-        
-        // Now proceed to Shiny selection
-        const shinySelectMenu = new StringSelectMenuBuilder()
-          .setCustomId('shinySelect')
-          .setPlaceholder('Select whether your Pokémon is shiny...')
-          .addOptions([
-            { label: 'Yes', description: 'It is shiny!', value: 'Yes' },
-            { label: 'No', description: 'It is not shiny.', value: 'No' },
-          ]);
-  
-        const shinyRow = new ActionRowBuilder().addComponents(shinySelectMenu);
-  
-        await interaction.reply({
-          content: 'Please select whether your Pokémon is shiny:',
-          components: [shinyRow],
-          ephemeral: true,
-        });
-      } catch (err) {
-        console.error('[InteractionCreate] Error processing mega details:', err);
-        if (!interaction.replied && !interaction.deferred) {
-          await interaction.reply({
-            content: 'There was an error processing your mega details. Please try again later.',
-            ephemeral: true,
-          });
-        }
-      }
-    }
-    // Handle select menu submissions for shiny selection
-    else if (interaction.isStringSelectMenu() && interaction.customId === 'shinySelect') {
-      try {
-        const pendingKey = `${interaction.channel.id}-${interaction.user.id}`;
-        const pending = pendingRegistrations[pendingKey];
-        if (!pending) {
-          return interaction.update({
-            content: 'No pending registration found.',
-            components: [],
-          });
-        }
-  
-        const shinyValue = interaction.values[0];
-        
-        // Prepare the final registration entry with all collected data
-        const registrationEntry = {
-          userId: interaction.user.id,
-          ign: pending.ign,
-          pokemon: pending.pokemon,
-          pokemonLevel: pending.pokemonLevel,
-          mega: pending.mega || 'No',
-          megaDetails: pending.megaDetails || '',
-          shiny: shinyValue,
-          holdingItem: pending.holdingItem,
-        };
-  
-        const channelName = interaction.channel.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-        const channelConfig = loadConfig(channelName);
-        
-        // Double-check user isn't already in the waiting list or queue (in case they registered while this was pending)
-        const userInQueue = channelConfig.queue.registrations.some(reg => reg.userId === interaction.user.id);
-        const userInWaitlist = channelConfig.waitingList.some(reg => reg.userId === interaction.user.id);
-        const userInActiveSession = channelConfig.activeSession.some(reg => reg.userId === interaction.user.id);
-        
-        if (userInQueue || userInWaitlist || userInActiveSession) {
-          await interaction.update({
-            content: "⚠️ You're already registered in this Union Circle. You cannot register twice in the same queue or while in an active session.",
-            components: [],
-          });
-          delete pendingRegistrations[pendingKey];
-          return;
-        }
-        
-        // Add to waiting list and mark as registered
-        channelConfig.waitingList.push(registrationEntry);
-        channelConfig.registeredUsers[interaction.user.id] = true;
-        saveConfig(channelName, channelConfig);
-        delete pendingRegistrations[pendingKey];
-  
-        // Update the interaction's message first to remove the select menu
-        await interaction.update({
-          content: 'Registration complete! Check below for your registration card.',
-          components: [],
-        });
-        
-        try {
-          // Generate the registration card using Canvas
-          const cardBuffer = await generateRegistrationCard(interaction.user, registrationEntry);
-          
-          // Create an attachment from the buffer
-          const attachment = new AttachmentBuilder(cardBuffer, { name: 'registration-card.png' });
-          
-          // Send the registration card as a follow-up message
-          await interaction.followUp({
-            files: [attachment],
-            ephemeral: false // Make it visible to everyone in the channel
-          });
-          
-        } catch (error) {
-          console.error('[InteractionCreate] Error generating registration card:', error);
-          await interaction.followUp({
-            content: 'Your registration has been completed, but there was an error generating your registration card.',
-            ephemeral: true
-          });
-        }
-      } catch (err) {
-        console.error('[InteractionCreate] Error processing select menu submission:', err);
-        if (!interaction.replied && !interaction.deferred) {
-          await interaction.reply({
-            content: 'There was an error processing your selection. Please try again later.',
-            ephemeral: true,
-          });
-        }
-      }
-    }
-  },
+  }
 };
+
+/**
+ * Handle slash command interactions
+ * @param {CommandInteraction} interaction - Slash command interaction
+ * @param {Client} client - Discord client
+ */
+async function handleSlashCommand(interaction, client) {
+  const commandName = interaction.commandName;
+  
+  // Special handling for register command
+  if (commandName === 'register') {
+    return handleRegisterCommand(interaction, client);
+  }
+  
+  // Standard command handling
+  const command = client.commands.get(commandName);
+  if (!command) {
+    logger.warn(`Command not found: ${commandName}`);
+    return interaction.reply({
+      content: `Command "${commandName}" not found. It may have been removed or is unavailable.`,
+      ephemeral: true,
+    });
+  }
+  
+  try {
+    logger.debug(`Executing slash command: ${commandName}`);
+    await command.execute(interaction, client);
+  } catch (error) {
+    await ErrorHandler.handleCommandError(error, interaction, commandName);
+  }
+}
+
+/**
+ * Handle modal submission interactions
+ * @param {ModalSubmitInteraction} interaction - Modal submission interaction
+ * @param {Client} client - Discord client
+ */
+async function handleModalSubmit(interaction, client) {
+  const modalId = interaction.customId;
+  
+  // Registration flow modals
+  if (modalId === 'registrationModal') {
+    return handleRegistrationModal(interaction, client);
+  } else if (modalId === 'megaDetailsModal') {
+    return handleMegaDetailsModal(interaction, client);
+  }
+  
+  // Add other modal handlers here as needed
+  logger.warn(`Unknown modal ID: ${modalId}`);
+}
+
+/**
+ * Handle button interactions
+ * @param {ButtonInteraction} interaction - Button interaction
+ * @param {Client} client - Discord client
+ */
+async function handleButtonInteraction(interaction, client) {
+  const buttonId = interaction.customId;
+  
+  logger.debug(`Button interaction: ${buttonId}`);
+  
+  // Handle pagination buttons
+  if (buttonId === 'prev_page' || buttonId === 'next_page') {
+    // Paginator components handle their own logic
+    return;
+  }
+  
+  // Handle queue reset confirmation
+  if (buttonId === 'confirm_reset_queue') {
+    // This is handled by the component collector in resetqueue command
+    return;
+  }
+  
+  // Handle channel management confirmation
+  if (buttonId === 'confirm_delete' || buttonId === 'cancel_delete') {
+    // This is handled by the component collector in manage command
+    return;
+  }
+  
+  // Add other button handlers here as needed
+  
+  // Default: Unknown button
+  logger.warn(`Unhandled button ID: ${buttonId}`);
+  await interaction.update({
+    content: 'This button is no longer valid.',
+    components: []
+  });
+}
+
+/**
+ * Handle select menu interactions
+ * @param {StringSelectMenuInteraction} interaction - Select menu interaction
+ * @param {Client} client - Discord client
+ */
+async function handleSelectMenuInteraction(interaction, client) {
+  const menuId = interaction.customId;
+  
+  logger.debug(`Select menu interaction: ${menuId}`);
+  
+  // Registration flow select menus
+  if (menuId === 'megaSelect') {
+    return handleMegaSelection(interaction, client);
+  } else if (menuId === 'shinySelect') {
+    return handleShinySelection(interaction, client);
+  }
+  
+  // Add other select menu handlers here as needed
+  
+  // Default: Unknown select menu
+  logger.warn(`Unhandled select menu ID: ${menuId}`);
+  await interaction.update({
+    content: 'This menu is no longer valid.',
+    components: []
+  });
+}

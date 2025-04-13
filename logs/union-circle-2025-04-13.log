@@ -1,0 +1,72 @@
+[2025-04-13T15:46:59.042Z] [INFO] Command executed: online by devry in ❌staff-uc
+[2025-04-13T15:46:59.657Z] [ERROR] Error executing command "online": TypeError: saveConfig is not a function
+    at Object.execute (/home/container/PokeHosting/commands/online.js:86:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.execute (/home/container/PokeHosting/events/messageCreate.js:81:9)
+[2025-04-13T15:46:59.659Z] [ERROR] Error in online: TypeError: saveConfig is not a function
+    at Object.execute (/home/container/PokeHosting/commands/online.js:86:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.execute (/home/container/PokeHosting/events/messageCreate.js:81:9)
+[2025-04-13T15:51:51.614Z] [INFO] QueueService initialized
+[2025-04-13T15:52:02.924Z] [INFO] Command executed: help by devry in ✅staff-uc
+[2025-04-13T15:52:50.664Z] [INFO] Registration completed for devry at position 1
+[2025-04-13T15:53:54.513Z] [INFO] Command executed: help by devry in ✅staff-uc
+[2025-04-13T15:54:59.515Z] [INFO] Command executed: queue by devry in ✅staff-uc
+[2025-04-13T15:55:11.339Z] [INFO] Command executed: queue by devry in ✅staff-uc
+[2025-04-13T15:56:14.944Z] [INFO] Command executed: queue by devry in ✅staff-uc
+[2025-04-13T15:56:53.355Z] [INFO] Command executed: manage by devry in ✅staff-uc
+[2025-04-13T15:58:04.023Z] [INFO] Command executed: queue by devry in ✅staff-uc
+[2025-04-13T15:58:15.777Z] [INFO] Registration completed for server_king_dp at position 1
+[2025-04-13T15:58:21.411Z] [INFO] Command executed: waitlist by devry in ✅staff-uc
+[2025-04-13T15:58:38.351Z] [ERROR] Error in status: TypeError: formatTimestamp is not a function
+    at Object.execute (/home/container/PokeHosting/commands/status.js:85:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async handleSlashCommand (/home/container/PokeHosting/events/interactionCreate.js:90:5)
+    at async Object.execute (/home/container/PokeHosting/events/interactionCreate.js:34:9)
+[2025-04-13T15:59:45.819Z] [INFO] Command executed: queue by devry in ✅staff-uc
+[2025-04-13T16:00:07.828Z] [INFO] Command executed: queue by devry in ✅staff-uc
+[2025-04-13T16:00:25.280Z] [INFO] Command executed: start by devry in ✅staff-uc
+[2025-04-13T16:01:08.414Z] [INFO] Command executed: start by devry in ✅staff-uc
+[2025-04-13T16:01:16.346Z] [INFO] Command executed: start by devry in ✅staff-uc
+[2025-04-13T16:01:39.652Z] [INFO] Command executed: help by devry in ✅staff-uc
+[2025-04-13T16:01:59.105Z] [ERROR] Error in session: TypeError: formatTimestamp is not a function
+    at handleSessionInfo (/home/container/PokeHosting/commands/session.js:141:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async handleSlashCommand (/home/container/PokeHosting/events/interactionCreate.js:90:5)
+    at async Object.execute (/home/container/PokeHosting/events/interactionCreate.js:34:9)
+[2025-04-13T16:02:46.950Z] [INFO] QueueService initialized
+[2025-04-13T16:02:48.060Z] [INFO] QueueService initialized
+[2025-04-13T16:02:48.955Z] [INFO] QueueService initialized
+[2025-04-13T16:02:49.787Z] [INFO] QueueService initialized
+[2025-04-13T16:02:50.583Z] [INFO] QueueService initialized
+[2025-04-13T16:02:51.387Z] [INFO] QueueService initialized
+[2025-04-13T16:02:52.231Z] [INFO] QueueService initialized
+[2025-04-13T16:02:53.050Z] [INFO] QueueService initialized
+[2025-04-13T16:02:53.871Z] [INFO] QueueService initialized
+[2025-04-13T16:02:54.729Z] [INFO] QueueService initialized
+[2025-04-13T16:02:55.560Z] [INFO] QueueService initialized
+[2025-04-13T16:02:56.357Z] [INFO] QueueService initialized
+[2025-04-13T16:02:57.238Z] [INFO] QueueService initialized
+[2025-04-13T16:02:58.103Z] [INFO] QueueService initialized
+[2025-04-13T16:02:58.942Z] [INFO] QueueService initialized
+[2025-04-13T16:02:59.765Z] [INFO] QueueService initialized
+[2025-04-13T16:03:00.590Z] [INFO] QueueService initialized
+[2025-04-13T16:03:01.457Z] [INFO] QueueService initialized
+[2025-04-13T16:03:02.401Z] [INFO] QueueService initialized
+[2025-04-13T16:03:03.312Z] [INFO] QueueService initialized
+[2025-04-13T16:03:04.204Z] [INFO] QueueService initialized
+[2025-04-13T16:03:05.090Z] [INFO] QueueService initialized
+[2025-04-13T16:03:06.001Z] [INFO] QueueService initialized
+[2025-04-13T16:03:06.896Z] [INFO] QueueService initialized
+[2025-04-13T16:03:07.715Z] [INFO] QueueService initialized
+[2025-04-13T16:06:47.703Z] [INFO] QueueService initialized
+[2025-04-13T16:06:48.781Z] [INFO] QueueService initialized
+[2025-04-13T16:06:49.719Z] [INFO] QueueService initialized
+[2025-04-13T16:06:50.623Z] [INFO] QueueService initialized
+[2025-04-13T16:06:51.498Z] [INFO] QueueService initialized
+[2025-04-13T16:06:52.384Z] [INFO] QueueService initialized
+[2025-04-13T16:07:53.295Z] [INFO] QueueService initialized
+[2025-04-13T16:07:54.301Z] [INFO] QueueService initialized
+[2025-04-13T16:07:55.174Z] [INFO] QueueService initialized
+[2025-04-13T16:07:56.050Z] [INFO] QueueService initialized
+[2025-04-13T16:07:56.876Z] [INFO] QueueService initialized

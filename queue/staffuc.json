@@ -6,11 +6,40 @@
     }
   },
   "lastCodeEmbeds": {},
-  "registeredUsers": {},
+  "registeredUsers": {
+    "99954108894552064": true,
+    "782164994891448321": true
+  },
   "queue": {
     "registrations": []
   },
-  "activeSession": [],
+  "activeSession": [
+    {
+      "userId": "99954108894552064",
+      "ign": "Test",
+      "pokemon": "Test",
+      "pokemonLevel": "100",
+      "mega": "No",
+      "megaDetails": "",
+      "shiny": "Yes",
+      "holdingItem": "Cherish Ball",
+      "registeredAt": 1744559570664,
+      "priority": 0
+    },
+    {
+      "userId": "782164994891448321",
+      "ign": "Test",
+      "pokemon": "Test",
+      "pokemonLevel": "Tes",
+      "mega": "Yes",
+      "megaDetails": "Mega Charizard Y",
+      "shiny": "Yes",
+      "holdingItem": "Test",
+      "registeredAt": 1744559895777,
+      "priority": 0
+    }
+  ],
   "waitingList": [],
-  "offlineEmbedMessageId": "1358487265139228723"
+  "offlineEmbedMessageId": "1358487265139228723",
+  "sessionStartTime": 1744559968298
 }
